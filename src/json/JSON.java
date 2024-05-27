@@ -7,7 +7,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
 
-public final class JSON// TODO: Document
+public final class JSON // TODO: Document
 {
     public static Token parse(String contents)
     {
@@ -469,11 +469,17 @@ public final class JSON// TODO: Document
 
         public Number getNumber()
         {
+            if(this.type != Type.NUMBER)
+                throw new WrongDataType("Expected " + Type.NUMBER + ", got " + this.type);
+
             return this.num;
         }
 
         public byte getByte()
         {
+            if(this.type != Type.NUMBER)
+                throw new WrongDataType("Expected " + Type.NUMBER + ", got " + this.type);
+
             if(this.num != null)
                 return this.num.byteValue();
             return 0;
@@ -481,6 +487,9 @@ public final class JSON// TODO: Document
 
         public short getShort()
         {
+            if(this.type != Type.NUMBER)
+                throw new WrongDataType("Expected " + Type.NUMBER + ", got " + this.type);
+
             if(this.num != null)
                 return this.num.shortValue();
             return 0;
@@ -488,6 +497,9 @@ public final class JSON// TODO: Document
 
         public int getInteger()
         {
+            if(this.type != Type.NUMBER)
+                throw new WrongDataType("Expected " + Type.NUMBER + ", got " + this.type);
+
             if(this.num != null)
                 return this.num.intValue();
             return 0;
@@ -495,6 +507,9 @@ public final class JSON// TODO: Document
 
         public long getLong()
         {
+            if(this.type != Type.NUMBER)
+                throw new WrongDataType("Expected " + Type.NUMBER + ", got " + this.type);
+
             if(this.num != null)
                 return this.num.longValue();
             return 0;
@@ -502,6 +517,9 @@ public final class JSON// TODO: Document
 
         public float getFloat()
         {
+            if(this.type != Type.NUMBER)
+                throw new WrongDataType("Expected " + Type.NUMBER + ", got " + this.type);
+
             if(this.num != null)
                 return this.num.floatValue();
             return 0;
@@ -509,6 +527,9 @@ public final class JSON// TODO: Document
 
         public double getDouble()
         {
+            if(this.type != Type.NUMBER)
+                throw new WrongDataType("Expected " + Type.NUMBER + ", got " + this.type);
+
             if(this.num != null)
                 return this.num.doubleValue();
             return 0;
@@ -520,6 +541,9 @@ public final class JSON// TODO: Document
 
         public String getString()
         {
+            if(this.type != Type.STRING)
+                throw new WrongDataType("Expected " + Type.STRING + ", got " + this.type);
+
             return this.str;
         }
 
@@ -529,6 +553,9 @@ public final class JSON// TODO: Document
 
         public Boolean getBoolean()
         {
+            if(this.type != Type.BOOLEAN)
+                throw new WrongDataType("Expected " + Type.BOOLEAN + ", got " + this.type);
+
             return this.bol;
         }
 
@@ -538,6 +565,9 @@ public final class JSON// TODO: Document
 
         public List<Token> getArray()
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr;
         }
 
@@ -545,66 +575,105 @@ public final class JSON// TODO: Document
 
         public Token getAsArray(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index);
         }
 
         public Number getAsArrayNumber(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index).getNumber();
         }
 
         public byte getAsArrayByte(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index).getByte();
         }
 
         public short getAsArrayShort(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index).getShort();
         }
 
         public int getAsArrayInteger(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index).getInteger();
         }
 
         public long getAsArrayLong(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index).getLong();
         }
 
         public float getAsArrayFloat(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index).getFloat();
         }
 
         public double getAsArrayDouble(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index).getDouble();
         }
 
         public String getAsArrayString(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index).getString();
         }
 
         public Boolean getAsArrayBoolean(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index).getBoolean();
         }
 
         public List<Token> getAsArrayArray(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index).getArray();
         }
 
         public Map<String, Token> getAsArrayObject(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index).getObject();
         }
 
         public Type getAsArrayType(int index)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             return this.arr.get(index).getType();
         }
 
@@ -614,31 +683,49 @@ public final class JSON// TODO: Document
 
         public void addAsArray(Token token)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             this.arr.add(token);
         }
 
         public void addAsArray(Number number)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             this.arr.add(new Token(number));
         }
 
         public void addAsArray(String string)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             this.arr.add(new Token(string));
         }
 
         public void addAsArray(Boolean bool)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             this.arr.add(new Token(bool));
         }
 
         public void addAsArray(List<?> array)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             this.arr.add(new Token(array));
         }
 
         public void addAsArray(Map<?, ?> object)
         {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
             this.arr.add(new Token(object));
         }
 
@@ -650,6 +737,9 @@ public final class JSON// TODO: Document
 
         public Map<String, Token> getObject()
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj;
         }
 
@@ -657,66 +747,105 @@ public final class JSON// TODO: Document
 
         public Token getAsObject(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field);
         }
 
         public Number getAsObjectNumber(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field).getNumber();
         }
 
         public byte getAsObjectByte(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field).getByte();
         }
 
         public short getAsObjectShort(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field).getShort();
         }
 
         public int getAsObjectInteger(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field).getInteger();
         }
 
         public long getAsObjectLong(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field).getLong();
         }
 
         public float getAsObjectFloat(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field).getFloat();
         }
 
         public double getAsObjectDouble(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field).getDouble();
         }
 
         public String getAsObjectString(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field).getString();
         }
 
         public Boolean getAsObjectBoolean(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field).getBoolean();
         }
 
         public List<Token> getAsObjectArray(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field).getArray();
         }
 
         public Map<String, Token> getAsObjectObject(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field).getObject();
         }
 
         public Type getAsObjectType(String field)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             return this.obj.get(field).getType();
         }
 
@@ -726,31 +855,49 @@ public final class JSON// TODO: Document
 
         public void putAsObject(String field, Token token)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             this.obj.put(field, token);
         }
 
         public void putAsObject(String field, Number number)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             this.obj.put(field, new Token(number));
         }
 
         public void putAsObject(String field, String string)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             this.obj.put(field, new Token(string));
         }
 
         public void putAsObject(String field, Boolean bool)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             this.obj.put(field, new Token(bool));
         }
 
         public void putAsObject(String field, List<?> array)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             this.obj.put(field, new Token(array));
         }
 
         public void putAsObject(String field, Map<?, ?> object)
         {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
             this.obj.put(field, new Token(object));
         }
 
@@ -834,6 +981,14 @@ public final class JSON// TODO: Document
                 throw new RuntimeException("Cannot complete object with unused key");
 
             return this.fields;
+        }
+    }
+
+    public static class WrongDataType extends RuntimeException
+    {
+        public WrongDataType(String message)
+        {
+            super(message);
         }
     }
 }
