@@ -7,7 +7,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
 
-public final class JSON // TODO: Document
+public final class JSON
 {
     /**
      * Takes a string representing a JSON file, and parses it into a Token that the user can manipulate. The returned
@@ -353,7 +353,7 @@ public final class JSON // TODO: Document
         // </editor-fold>
     }
 
-    private static class Compiler // TODO: Fix compiling empty objects and arrays.
+    private static class Compiler
     {
         private final Token token;
         private final String space;
