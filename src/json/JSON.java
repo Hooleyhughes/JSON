@@ -9,6 +9,12 @@ import java.util.*;
 
 public final class JSON // TODO: Document
 {
+    /**
+     * Takes a string representing a JSON file, and parses it into a Token that the user can manipulate. The returned
+     * Token represents the JSON object or array.
+     * @param contents The String with the contents of the JSON file.
+     * @return A Token representing the JSON object/array.
+     */
     public static Token parse(String contents)
     {
         try
@@ -21,6 +27,12 @@ public final class JSON // TODO: Document
         }
     }
 
+    /**
+     * Takes a JSON Token and returns the String representation of the object or array. The returned String is formatted
+     * to be writeable to a file and parsed again.
+     * @param json The Token of the JSON object/array.
+     * @return A String with the compiled contents of the JSON object/array.
+     */
     public static String compile(Token json)
     {
         return new Compiler(json).compile();
@@ -28,6 +40,12 @@ public final class JSON // TODO: Document
 
     // <editor-fold desc="File IO" default=closed>
 
+    /**
+     * Reads the contents of a Path, and attempts to create a Token representation of the contents. Works similar to the
+     * parse method, however also including reading the contents of the file into a String to parse.
+     * @param filePath The Path leading to the contents.
+     * @return A Token representing the JSON object/array.
+     */
     public static Token read(Path filePath)
     {
         try
@@ -40,6 +58,12 @@ public final class JSON // TODO: Document
         }
     }
 
+    /**
+     * Writes the passed Token to the Path, as a JSON file. Works similar to the write method, however also writes the
+     * compiled String to the provided Path.
+     * @param json The Token to compile and write.
+     * @param filePath The Path to write to.
+     */
     public static void write(Token json, Path filePath)
     {
         try
@@ -56,6 +80,12 @@ public final class JSON // TODO: Document
 
     // <editor-fold desc="Conversions" default=closed>
 
+    /**
+     * Converts a List of any type into a List of Tokens, easier to be used in conjunction with the parser.
+     * @param array The List to convert.
+     * @return A List of Tokens.
+     * @param <T> The original type for the List.
+     */
     public static <T> List<Token> convertArray(List<T> array)
     {
         List<Token> tokens = new ArrayList<>();
@@ -83,6 +113,13 @@ public final class JSON // TODO: Document
         return tokens;
     }
 
+    /**
+     * Converts a Map of any types into a Map of Strings to Tokens, easier to use in conjunction with the parser.
+     * @param map The Map or any types to convert.
+     * @return A Map of Strings to Tokens.
+     * @param <K> The original type for the Map keys.
+     * @param <V> The original type for the Map values.
+     */
     public static <K, V> Map<String, Token> convertObject(Map<K, V> map)
     {
         Map<String, Token> tokens = new HashMap<>();
@@ -316,7 +353,7 @@ public final class JSON // TODO: Document
         // </editor-fold>
     }
 
-    private static class Compiler
+    private static class Compiler // TODO: Fix compiling empty objects and arrays.
     {
         private final Token token;
         private final String space;
@@ -347,6 +384,9 @@ public final class JSON // TODO: Document
 
         private String formatArray(List<Token> array, String indent)
         {
+            if(array.isEmpty())
+                return "[]";
+
             StringBuilder total = new StringBuilder("[\n");
 
             for(Token string : array)
@@ -358,6 +398,9 @@ public final class JSON // TODO: Document
 
         private String formatObject(Map<String, Token> object, String indent)
         {
+            if(object.isEmpty())
+                return "{}";
+
             StringBuilder total = new StringBuilder("{\n");
 
             List<Map.Entry<String, Token>> sorted = object.entrySet().stream().sorted(Comparator.comparingInt(entry -> entry.getValue().order)).toList();
@@ -370,6 +413,15 @@ public final class JSON // TODO: Document
         }
     }
 
+    /**
+     * The Token class represents every field a JSON can have. Since JSON doesn't specify types, the type
+     * is decided when parsing, and as such must be represented by a generic class that can represent all types. The
+     * Token class is used with all values in the JSON, and can be converted into any of the types in a JSON although
+     * converting into the wrong type will throw an exception. For ease of use, Tokens representing objects or arrays
+     * have some methods to directly interact with the underlying Map or List to reduce the number of method calls and
+     * conversions, however using these methods on a Token that doesn't represent an object or array will also throw an
+     * exception.
+     */
     public static class Token
     {
         private final Number num;
@@ -378,6 +430,9 @@ public final class JSON // TODO: Document
         private final List<Token> arr;
         private final Map<String, Token> obj;
 
+        /**
+         * An enum to represent all the different types a JSON field can represent.
+         */
         public enum Type {NULL, NUMBER, STRING, BOOLEAN, ARRAY, OBJECT}
         private final Type type;
 
@@ -385,6 +440,9 @@ public final class JSON // TODO: Document
 
         // <editor-fold desc="Constructors" default=closed>
 
+        /**
+         * Creates a null Token.
+         */
         public Token()
         {
             this.num = null;
@@ -398,6 +456,10 @@ public final class JSON // TODO: Document
             this.order = 0;
         }
 
+        /**
+         * Creates a Token representing a number.
+         * @param num The number the Token represents.
+         */
         public Token(Number num)
         {
             this.num = num;
@@ -411,6 +473,10 @@ public final class JSON // TODO: Document
             this.order = 0;
         }
 
+        /**
+         * Creates a Token representing a String.
+         * @param str The String the Token represents.
+         */
         public Token(String str)
         {
             this.num = null;
@@ -424,6 +490,10 @@ public final class JSON // TODO: Document
             this.order = 0;
         }
 
+        /**
+         * Creates a Token representing a boolean.
+         * @param bol The boolean the Token represents.
+         */
         public Token(Boolean bol)
         {
             this.num = null;
@@ -437,6 +507,11 @@ public final class JSON // TODO: Document
             this.order = 0;
         }
 
+        /**
+         * Creates a Token representing an array.
+         * @param arr The List to represent. The List is automatically converted to a List of Tokens.
+         * @param <T> The original List type.
+         */
         public <T> Token(List<T> arr)
         {
             this.num = null;
@@ -450,6 +525,12 @@ public final class JSON // TODO: Document
             this.order = 0;
         }
 
+        /**
+         * Creates a Token representing an object.
+         * @param obj The Map to represent. The Map is automatically converted to a Map of Strings to Tokens.
+         * @param <K> The original Map key type.
+         * @param <V> The original Map value type.
+         */
         public <K, V> Token(Map<K, V> obj)
         {
             this.num = null;
@@ -467,6 +548,10 @@ public final class JSON // TODO: Document
 
         // <editor-fold desc="Get Number" default=closed>
 
+        /**
+         * Gets the number this Token represents. Throws an exception if the Token doesn't represent a number.
+         * @return The Number the Token represents.
+         */
         public Number getNumber()
         {
             if(this.type != Type.NUMBER)
@@ -475,6 +560,10 @@ public final class JSON // TODO: Document
             return this.num;
         }
 
+        /**
+         * Gets the number the Token represents as a byte. Throws an exception if the Token doesn't represent a number.
+         * @return The byte the Token's Number represents.
+         */
         public byte getByte()
         {
             if(this.type != Type.NUMBER)
@@ -485,6 +574,10 @@ public final class JSON // TODO: Document
             return 0;
         }
 
+        /**
+         * Gets the number the Token represents as a short. Throws an exception if the Token doesn't represent a number.
+         * @return The short the Token's Number represents.
+         */
         public short getShort()
         {
             if(this.type != Type.NUMBER)
@@ -495,6 +588,11 @@ public final class JSON // TODO: Document
             return 0;
         }
 
+        /**
+         * Gets the number the Token represents as an integer. Throws an exception if the Token doesn't represent a
+         * number.
+         * @return The integer the Token's Number represents.
+         */
         public int getInteger()
         {
             if(this.type != Type.NUMBER)
@@ -505,6 +603,10 @@ public final class JSON // TODO: Document
             return 0;
         }
 
+        /**
+         * Gets the number the Token represents as a long. Throws an exception if the Token doesn't represent a number.
+         * @return The long the Token's Number represents.
+         */
         public long getLong()
         {
             if(this.type != Type.NUMBER)
@@ -515,6 +617,10 @@ public final class JSON // TODO: Document
             return 0;
         }
 
+        /**
+         * Gets the number the Token represents as a float. Throws an exception if the Token doesn't represent a number.
+         * @return The float the Token's number represents.
+         */
         public float getFloat()
         {
             if(this.type != Type.NUMBER)
@@ -525,6 +631,11 @@ public final class JSON // TODO: Document
             return 0;
         }
 
+        /**
+         * Gets the number the Token represents as a double. Throws an exception if the Token doesn't represent a
+         * number.
+         * @return The double the Token's number represents.
+         */
         public double getDouble()
         {
             if(this.type != Type.NUMBER)
@@ -539,6 +650,10 @@ public final class JSON // TODO: Document
 
         // <editor-fold desc="Get String" default=closed>
 
+        /**
+         * Gets the String this Token represents. Throws an exception if the Token doesn't represent a String.
+         * @return The String the Token represents.
+         */
         public String getString()
         {
             if(this.type != Type.STRING)
@@ -551,6 +666,10 @@ public final class JSON // TODO: Document
 
         // <editor-fold desc="Get Boolean" default=closed>
 
+        /**
+         * Gets the boolean this Token represents. Throws an exception if the Token doesn't represent a boolean.
+         * @return The Boolean the Token represents.
+         */
         public Boolean getBoolean()
         {
             if(this.type != Type.BOOLEAN)
@@ -561,8 +680,14 @@ public final class JSON // TODO: Document
 
         // </editor-fold>
 
+        // TODO: Add other ease of use methods to Array and Object.
+
         // <editor-fold desc="Array" default=closed>
 
+        /**
+         * Gets the List this Token represents. Throws an exception if the Token doesn't represent a List.
+         * @return The List of Tokens the Token represents.
+         */
         public List<Token> getArray()
         {
             if(this.type != Type.ARRAY)
@@ -573,6 +698,12 @@ public final class JSON // TODO: Document
 
         // <editor-fold desc="Get" default=closed>
 
+        /**
+         * Treats the Token as an array, and gets the element at the specified index as a Token. Throws an exception if
+         * the Token doesn't represent an array.
+         * @param index The index at which to get the element.
+         * @return The Token at the specified index.
+         */
         public Token getAsArray(int index)
         {
             if(this.type != Type.ARRAY)
@@ -581,6 +712,12 @@ public final class JSON // TODO: Document
             return this.arr.get(index);
         }
 
+        /**
+         * Treats the Token as an array, and gets the element at the specified index as a Number. Throws an exception if
+         * the Token doesn't represent an array, or the element at the index doesn't represent a number.
+         * @param index The index at which to get the element.
+         * @return The Number at the specified index.
+         */
         public Number getAsArrayNumber(int index)
         {
             if(this.type != Type.ARRAY)
@@ -589,6 +726,12 @@ public final class JSON // TODO: Document
             return this.arr.get(index).getNumber();
         }
 
+        /**
+         * Treats the Token as an array, and gets the element at the specified index as a byte. Throws an exception if
+         * the Token doesn't represent an array, or the element at the index doesn't represent a number.
+         * @param index The index at which to get the element.
+         * @return The byte at the specified index.
+         */
         public byte getAsArrayByte(int index)
         {
             if(this.type != Type.ARRAY)
@@ -597,6 +740,12 @@ public final class JSON // TODO: Document
             return this.arr.get(index).getByte();
         }
 
+        /**
+         * Treats the Token as an array, and gets the element at the specified index as a short. Throws an exception if
+         * the Token doesn't represent an array, or the element at the index doesn't represent a number.
+         * @param index The index at which to get the element.
+         * @return The short at the specified index.
+         */
         public short getAsArrayShort(int index)
         {
             if(this.type != Type.ARRAY)
@@ -605,6 +754,12 @@ public final class JSON // TODO: Document
             return this.arr.get(index).getShort();
         }
 
+        /**
+         * Treats the Token as an array, and gets the element at the specified index as an integer. Throws an exception
+         * if the Token doesn't represent an array, or the element at the index doesn't represent a number.
+         * @param index The index at which to get the element.
+         * @return The integer at the specified index.
+         */
         public int getAsArrayInteger(int index)
         {
             if(this.type != Type.ARRAY)
@@ -613,6 +768,12 @@ public final class JSON // TODO: Document
             return this.arr.get(index).getInteger();
         }
 
+        /**
+         * Treats the Token as an array, and gets the element at the specified index as a long. Throws an exception if
+         * the Token doesn't represent an array, or the element at the index doesn't represent a number.
+         * @param index The index at which to get the element.
+         * @return The long at the specified index.
+         */
         public long getAsArrayLong(int index)
         {
             if(this.type != Type.ARRAY)
@@ -621,6 +782,12 @@ public final class JSON // TODO: Document
             return this.arr.get(index).getLong();
         }
 
+        /**
+         * Treats the Token as an array, and gets the element at the specified index as a float. Throws an exception if
+         * the Token doesn't represent an array, or the element at the index doesn't represent a number.
+         * @param index The index at which to get the element.
+         * @return The float at the specified index.
+         */
         public float getAsArrayFloat(int index)
         {
             if(this.type != Type.ARRAY)
@@ -629,6 +796,12 @@ public final class JSON // TODO: Document
             return this.arr.get(index).getFloat();
         }
 
+        /**
+         * Treats the Token as an array, and gets the element at the specified index as a double. Throws an exception if
+         * the Token doesn't represent an array, or the element at the index doesn't represent a number.
+         * @param index The index at which to get the element.
+         * @return The double at the specified index.
+         */
         public double getAsArrayDouble(int index)
         {
             if(this.type != Type.ARRAY)
@@ -637,6 +810,12 @@ public final class JSON // TODO: Document
             return this.arr.get(index).getDouble();
         }
 
+        /**
+         * Treats the Token as an array, and gets the element at the specified index as a String. Throws an exception if
+         * the Token doesn't represent an array, or the element at the index doesn't represent a string.
+         * @param index The index at which to get the element.
+         * @return The String at the specified index.
+         */
         public String getAsArrayString(int index)
         {
             if(this.type != Type.ARRAY)
@@ -645,6 +824,12 @@ public final class JSON // TODO: Document
             return this.arr.get(index).getString();
         }
 
+        /**
+         * Treats the Token as an array, and gets the element at the specified index as a Boolean. Throws an exception
+         * if the Token doesn't represent an array, or the element at the index doesn't represent a boolean.
+         * @param index The index at which to get the element.
+         * @return The Boolean at the specified index.
+         */
         public Boolean getAsArrayBoolean(int index)
         {
             if(this.type != Type.ARRAY)
@@ -653,6 +838,12 @@ public final class JSON // TODO: Document
             return this.arr.get(index).getBoolean();
         }
 
+        /**
+         * Treats the Token as an array, and gets the element at the specified index as a List of Tokens. Throws an
+         * exception if the Token doesn't represent an array, or the element at the index doesn't represent an array.
+         * @param index The index at which to get the element.
+         * @return The List of Tokens at the specified index.
+         */
         public List<Token> getAsArrayArray(int index)
         {
             if(this.type != Type.ARRAY)
@@ -661,6 +852,13 @@ public final class JSON // TODO: Document
             return this.arr.get(index).getArray();
         }
 
+        /**
+         * Treats the Token as an array, and gets the element at the specified index as a Map of Strings to Tokens.
+         * Throws an exception if the Token doesn't represent an array, or the element at the index doesn't represent an
+         * object.
+         * @param index The index at which to get the element.
+         * @return The Map of Strings to Tokens at the specified index.
+         */
         public Map<String, Token> getAsArrayObject(int index)
         {
             if(this.type != Type.ARRAY)
@@ -669,6 +867,12 @@ public final class JSON // TODO: Document
             return this.arr.get(index).getObject();
         }
 
+        /**
+         * Treats the Token as an array, and gets the type of the element at the specified index. Throws an exception if
+         * the Token doesn't represent an array.
+         * @param index The index at which to get the element.
+         * @return The type of the element at the specified index.
+         */
         public Type getAsArrayType(int index)
         {
             if(this.type != Type.ARRAY)
@@ -681,6 +885,11 @@ public final class JSON // TODO: Document
 
         // <editor-fold desc="Add" default=closed>
 
+        /**
+         * Treats the Token as an array, and adds the specified Token to the array. Throws an exception if the Token
+         * doesn't represent an array.
+         * @param token The Token to add to the array.
+         */
         public void addAsArray(Token token)
         {
             if(this.type != Type.ARRAY)
@@ -689,6 +898,11 @@ public final class JSON // TODO: Document
             this.arr.add(token);
         }
 
+        /**
+         * Treats the Token as an array, and adds the specified Number to the array. Throws an exception if the Token
+         * doesn't represent an array.
+         * @param number The Number to add to the array.
+         */
         public void addAsArray(Number number)
         {
             if(this.type != Type.ARRAY)
@@ -697,6 +911,11 @@ public final class JSON // TODO: Document
             this.arr.add(new Token(number));
         }
 
+        /**
+         * Treats the Token as an array, and adds the specified String to the array. Throws an exception if the Token
+         * doesn't represent an array.
+         * @param string The String to add to the array.
+         */
         public void addAsArray(String string)
         {
             if(this.type != Type.ARRAY)
@@ -705,6 +924,11 @@ public final class JSON // TODO: Document
             this.arr.add(new Token(string));
         }
 
+        /**
+         * Treats the Token as an array, and adds the specified Boolean to the array. Throws an exception if the Token
+         * doesn't represent an array.
+         * @param bool The Boolean to add to the array.
+         */
         public void addAsArray(Boolean bool)
         {
             if(this.type != Type.ARRAY)
@@ -713,6 +937,12 @@ public final class JSON // TODO: Document
             this.arr.add(new Token(bool));
         }
 
+        /**
+         * Treats the Token as an array, and adds the specified List of any type to the array. The List is automatically
+         * converted to a List of Tokens before adding to the array. Throws an exception if the Token doesn't represent
+         * an array.
+         * @param array The List to add to the array.
+         */
         public void addAsArray(List<?> array)
         {
             if(this.type != Type.ARRAY)
@@ -721,6 +951,12 @@ public final class JSON // TODO: Document
             this.arr.add(new Token(array));
         }
 
+        /**
+         * Treats the Token as an array, and adds the specified Map of any type to the array. The Map is automatically
+         * converted to a Map of Strings to Tokens before adding to the array. Throws an exception if the Token doesn't
+         * represent an array.
+         * @param object The Map to add to the array.
+         */
         public void addAsArray(Map<?, ?> object)
         {
             if(this.type != Type.ARRAY)
@@ -731,10 +967,104 @@ public final class JSON // TODO: Document
 
         // </editor-fold>
 
+        // <editor-fold desc="Add At" default=closed>
+
+        /**
+         * Treats the Token as an array, and adds the specified Token to the array at the given index. Throws an
+         * exception if the Token doesn't represent an array.
+         * @param index The index to add the Token at.
+         * @param token The Token to add to the array.
+         */
+        public void addAsArray(int index, Token token)
+        {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
+            this.arr.add(index, token);
+        }
+
+        /**
+         * Treats the Token as an array, and adds the specified Number to the array at the given index. Throws an
+         * exception if the Token doesn't represent an array.
+         * @param index The index to add the Token at.
+         * @param number The Number to add to the array.
+         */
+        public void addAsArray(int index, Number number)
+        {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
+            this.arr.add(index, new Token(number));
+        }
+
+        /**
+         * Treats the Token as an array, and adds the specified String to the array at the given index. Throws an
+         * exception if the Token doesn't represent an array.
+         * @param index The index to add the Token at.
+         * @param string The String to add to the array.
+         */
+        public void addAsArray(int index, String string)
+        {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
+            this.arr.add(index, new Token(string));
+        }
+
+        /**
+         * Treats the Token as an array, and adds the specified Boolean to the array at the given index. Throws an
+         * exception if the Token doesn't represent an array.
+         * @param index The index to add the Token at.
+         * @param bool The Boolean to add to the array.
+         */
+        public void addAsArray(int index, Boolean bool)
+        {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
+            this.arr.add(index, new Token(bool));
+        }
+
+        /**
+         * Treats the Token as an array, and adds the specified List of any type to the array at the given index. The
+         * List is automatically converted to a List of Tokens before adding to the array. Throws an exception if the
+         * Token doesn't represent an array.
+         * @param index The index to add the Token at.
+         * @param array The List to add to the array.
+         */
+        public void addAsArray(int index, List<?> array)
+        {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
+            this.arr.add(index, new Token(array));
+        }
+
+        /**
+         * Treats the Token as an array, and adds the specified Map of any type to the array at the given index. The Map
+         * is automatically converted to a Map of Strings to Tokens before adding to the array. Throws an exception if
+         * the Token doesn't represent an array.
+         * @param index The index to add the Token at.
+         * @param object The Map to add to the array.
+         */
+        public void addAsArray(int index, Map<?, ?> object)
+        {
+            if(this.type != Type.ARRAY)
+                throw new WrongDataType("Expected " + Type.ARRAY + ", got " + this.type);
+
+            this.arr.add(index, new Token(object));
+        }
+
+        // </editor-fold>
+
         // </editor-fold>
 
         // <editor-fold desc="Object" default=closed>
 
+        /**
+         * Gets the Map this Token represents. Throws an exception if the Token doesn't represent a Map.
+         * @return The Map of String to Tokens the Token represents.
+         */
         public Map<String, Token> getObject()
         {
             if(this.type != Type.OBJECT)
@@ -745,7 +1075,27 @@ public final class JSON // TODO: Document
 
         // <editor-fold desc="Get" default=closed>
 
-        public Token getAsObject(String field)
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as an Object. Throws an exception if
+         * the Token doesn't represent an object.
+         * @param field The key at which to get the field.
+         * @return The Object at the specified field.
+         */
+        public Object getAsObject(String field)
+        {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
+            return this.obj.get(field).get();
+        }
+
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as a Token. Throws an exception if the
+         * Token doesn't represent an object.
+         * @param field The key at which to get the field.
+         * @return The Token at the specified field.
+         */
+        public Token getAsObjectToken(String field)
         {
             if(this.type != Type.OBJECT)
                 throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
@@ -753,6 +1103,12 @@ public final class JSON // TODO: Document
             return this.obj.get(field);
         }
 
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as a Number. Throws an exception if
+         * the Token doesn't represent an object, or the field doesn't represent a number.
+         * @param field The key at which to get the field.
+         * @return The Number at the specified field.
+         */
         public Number getAsObjectNumber(String field)
         {
             if(this.type != Type.OBJECT)
@@ -761,6 +1117,12 @@ public final class JSON // TODO: Document
             return this.obj.get(field).getNumber();
         }
 
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as a byte. Throws an exception if the
+         * Token doesn't represent an object, or the field doesn't represent a number.
+         * @param field The key at which to get the field.
+         * @return The byte at the specified field.
+         */
         public byte getAsObjectByte(String field)
         {
             if(this.type != Type.OBJECT)
@@ -769,6 +1131,12 @@ public final class JSON // TODO: Document
             return this.obj.get(field).getByte();
         }
 
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as a short. Throws an exception if the
+         * Token doesn't represent an object, or the field doesn't represent a number.
+         * @param field The key at which to get the field.
+         * @return The short at the specified field.
+         */
         public short getAsObjectShort(String field)
         {
             if(this.type != Type.OBJECT)
@@ -777,6 +1145,12 @@ public final class JSON // TODO: Document
             return this.obj.get(field).getShort();
         }
 
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as an integer. Throws an exception if
+         * the Token doesn't represent an object, or the field doesn't represent a number.
+         * @param field The key at which to get the field.
+         * @return The integer at the specified field.
+         */
         public int getAsObjectInteger(String field)
         {
             if(this.type != Type.OBJECT)
@@ -785,6 +1159,12 @@ public final class JSON // TODO: Document
             return this.obj.get(field).getInteger();
         }
 
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as a long. Throws an exception if the
+         * Token doesn't represent an object, or the field doesn't represent a number.
+         * @param field The key at which to get the field.
+         * @return The long at the specified field.
+         */
         public long getAsObjectLong(String field)
         {
             if(this.type != Type.OBJECT)
@@ -793,6 +1173,12 @@ public final class JSON // TODO: Document
             return this.obj.get(field).getLong();
         }
 
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as a float. Throws an exception if the
+         * Token doesn't represent an object, or the field doesn't represent a number.
+         * @param field The key at which to get the field.
+         * @return The float at the specified field.
+         */
         public float getAsObjectFloat(String field)
         {
             if(this.type != Type.OBJECT)
@@ -801,6 +1187,12 @@ public final class JSON // TODO: Document
             return this.obj.get(field).getFloat();
         }
 
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as a double. Throws an exception if
+         * the Token doesn't represent an object, or the field doesn't represent a number.
+         * @param field The key at which to get the field.
+         * @return The double at the specified field.
+         */
         public double getAsObjectDouble(String field)
         {
             if(this.type != Type.OBJECT)
@@ -809,6 +1201,12 @@ public final class JSON // TODO: Document
             return this.obj.get(field).getDouble();
         }
 
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as a String. Throws an exception if
+         * the Token doesn't represent an object, or the field doesn't represent a string.
+         * @param field The key at which to get the field.
+         * @return The String at the specified field.
+         */
         public String getAsObjectString(String field)
         {
             if(this.type != Type.OBJECT)
@@ -817,6 +1215,12 @@ public final class JSON // TODO: Document
             return this.obj.get(field).getString();
         }
 
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as a Boolean. Throws an exception if
+         * the Token doesn't represent an object, or the field doesn't represent a boolean.
+         * @param field The key at which to get the field.
+         * @return The Boolean at the specified field.
+         */
         public Boolean getAsObjectBoolean(String field)
         {
             if(this.type != Type.OBJECT)
@@ -825,6 +1229,12 @@ public final class JSON // TODO: Document
             return this.obj.get(field).getBoolean();
         }
 
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as a List of Tokens. Throws an
+         * exception if the Token doesn't represent an object, or the field doesn't represent an array.
+         * @param field The key at which to get the field.
+         * @return The List of Tokens at the specified field.
+         */
         public List<Token> getAsObjectArray(String field)
         {
             if(this.type != Type.OBJECT)
@@ -833,6 +1243,12 @@ public final class JSON // TODO: Document
             return this.obj.get(field).getArray();
         }
 
+        /**
+         * Treats the Token as an object, and gets the field at the specified key as a Map of Strings to Tokens. Throws
+         * an exception if the Token doesn't represent an object, or the field doesn't represent an object.
+         * @param field The key at which to get the field.
+         * @return The Map of Strings to Tokens at the specified field.
+         */
         public Map<String, Token> getAsObjectObject(String field)
         {
             if(this.type != Type.OBJECT)
@@ -841,6 +1257,12 @@ public final class JSON // TODO: Document
             return this.obj.get(field).getObject();
         }
 
+        /**
+         * Treats the Token as an object, and gets the type of the field at the specified key. Throws an exception if
+         * the Token doesn't represent an object.
+         * @param field The key at which to get the field.
+         * @return The type of the field at the specified field.
+         */
         public Type getAsObjectType(String field)
         {
             if(this.type != Type.OBJECT)
@@ -853,6 +1275,25 @@ public final class JSON // TODO: Document
 
         // <editor-fold desc="Put" default=closed>
 
+        /**
+         * Treats the Token as an object, and adds null to the object. Throws an exception if the Token doesn't
+         * represent an object.
+         * @param field The String representing the field name.
+         */
+        public void putAsObject(String field)
+        {
+            if(this.type != Type.OBJECT)
+                throw new WrongDataType("Expected " + Type.OBJECT + ", got " + this.type);
+
+            this.obj.put(field, new Token());
+        }
+
+        /**
+         * Treats the Token as an object, and adds the specified Token to the object. Throws an exception if the Token
+         * doesn't represent an object.
+         * @param field The String representing the field name.
+         * @param token The Token representing the field value.
+         */
         public void putAsObject(String field, Token token)
         {
             if(this.type != Type.OBJECT)
@@ -861,6 +1302,12 @@ public final class JSON // TODO: Document
             this.obj.put(field, token);
         }
 
+        /**
+         * Treats the Token as an object, and adds the specified Number to the object. Throws an exception if the Token
+         * doesn't represent an object.
+         * @param field The String representing the field name.
+         * @param number The Number representing the field value.
+         */
         public void putAsObject(String field, Number number)
         {
             if(this.type != Type.OBJECT)
@@ -869,6 +1316,12 @@ public final class JSON // TODO: Document
             this.obj.put(field, new Token(number));
         }
 
+        /**
+         * Treats the Token as an object, and adds the specified String to the object. Throws an exception if the Token
+         * doesn't represent an object.
+         * @param field The String representing the field name.
+         * @param string The String representing the field value.
+         */
         public void putAsObject(String field, String string)
         {
             if(this.type != Type.OBJECT)
@@ -877,6 +1330,12 @@ public final class JSON // TODO: Document
             this.obj.put(field, new Token(string));
         }
 
+        /**
+         * Treats the Token as an object, and adds the specified Boolean to the object. Throws an exception if the Token
+         * doesn't represent an object.
+         * @param field The String representing the field name.
+         * @param bool The Token representing the field value.
+         */
         public void putAsObject(String field, Boolean bool)
         {
             if(this.type != Type.OBJECT)
@@ -885,6 +1344,12 @@ public final class JSON // TODO: Document
             this.obj.put(field, new Token(bool));
         }
 
+        /**
+         * Treats the Token as an object, and adds the specified List of any type to the object. The List is converted
+         * automatically into a List of Tokens. Throws an exception if the Token doesn't represent an object.
+         * @param field The String representing the field name.
+         * @param array The List of any type representing the field value.
+         */
         public void putAsObject(String field, List<?> array)
         {
             if(this.type != Type.OBJECT)
@@ -893,6 +1358,12 @@ public final class JSON // TODO: Document
             this.obj.put(field, new Token(array));
         }
 
+        /**
+         * Treats the Token as an object, and adds the specified Map of any type to the object. The Map is converted
+         * automatically into a Map of Strings to Tokens. Throws an exception if the Token doesn't represent an object.
+         * @param field The String representing the field name.
+         * @param object The Map of any type representing the field value.
+         */
         public void putAsObject(String field, Map<?, ?> object)
         {
             if(this.type != Type.OBJECT)
@@ -907,6 +1378,10 @@ public final class JSON // TODO: Document
 
         // <editor-fold desc="Get Type" default=closed>
 
+        /**
+         * Gets the type of the Token. The type represents the type of data in the JSON.
+         * @return the Type.
+         */
         public Type getType()
         {
             return this.type;
@@ -916,11 +1391,27 @@ public final class JSON // TODO: Document
 
         // <editor-fold desc="Order" default=closed>
 
+        /**
+         * Gets the order of the Token. The order value determines where in the JSON object the Token is put. While the
+         * order makes very little functional difference to the JSON object, it helps maintain readability and
+         * consistency when modifying existing JSON files. The fields in a JSON object are sorted by their order, in
+         * ascending order. This means lower valued Tokens are placed closer to the top of the JSON object. This is most
+         * noticeable when compiling the JSON object.
+         * @return The integer representation of the order.
+         */
         public int getOrder()
         {
             return this.order;
         }
 
+        /**
+         * Sets the order of the Token. The order value determines where in the JSON object the Token is put. While the
+         * order makes very little function difference to the JSON object, it helps maintain readability and
+         * consistency when modifying existing JSON files. The fields in a JSON object are sorted by their order, in
+         * ascending order. This means lower valued Tokens are placed closer to the top of the JSON object. This is most
+         * noticeable when compiling the JSON object.
+         * @param order The integer representation of the order.
+         */
         public void setOrder(int order)
         {
             this.order = order;
@@ -928,6 +1419,13 @@ public final class JSON // TODO: Document
 
         // </editor-fold>
 
+        /**
+         * Gets the value of the Token. The returned value is only specified as an Object because the type is dynamic
+         * based on the type in the JSON. So that all values can be represented as an Object, values such as Numbers and
+         * Booleans use the wrapper classes. Arrays are represented using a List of Tokens, and objects are represented
+         * using a Map of Strings to Tokens.
+         * @return The Object representation of the value of the Token.
+         */
         private Object get()
         {
             return switch(this.type)
@@ -941,6 +1439,10 @@ public final class JSON // TODO: Document
             };
         }
 
+        /**
+         * Creates a String representation of the Token, which includes the type of the Token as well as the value.
+         * @return The String representation of the Token.
+         */
         @Override
         public String toString()
         {
@@ -984,6 +1486,9 @@ public final class JSON // TODO: Document
         }
     }
 
+    /**
+     * An exception representing attempts to convert JSON Tokens to the wrong type.
+     */
     public static class WrongDataType extends RuntimeException
     {
         public WrongDataType(String message)
