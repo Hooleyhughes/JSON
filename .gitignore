@@ -2,6 +2,7 @@
 out/
 .idea/
 JSON.iml
+src/test/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
