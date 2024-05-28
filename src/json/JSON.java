@@ -407,11 +407,11 @@ public final class JSON
      */
     public static class Token
     {
-        private final Number num;
-        private final String str;
-        private final Boolean bol; // Not bool to keep 3 letter names
-        private final List<Token> arr;
-        private final Map<String, Token> obj;
+        private Number num;
+        private String str;
+        private Boolean bol;
+        private List<Token> arr;
+        private Map<String, Token> obj;
 
         /**
          * An enum to represent all the different types a JSON field can represent.
@@ -419,7 +419,7 @@ public final class JSON
         public enum Type
         {NULL, NUMBER, STRING, BOOLEAN, ARRAY, OBJECT}
 
-        private final Type type;
+        private Type type;
 
         private int order;
 
@@ -495,11 +495,9 @@ public final class JSON
 
         /**
          * Creates a Token representing an array.
-         *
          * @param arr The List to represent. The List is automatically converted to a List of Tokens.
-         * @param <T> The original List type.
          */
-        public <T> Token(List<T> arr)
+        public Token(List<?> arr)
         {
             this.num = null;
             this.str = null;
@@ -514,12 +512,9 @@ public final class JSON
 
         /**
          * Creates a Token representing an object.
-         *
          * @param obj The Map to represent. The Map is automatically converted to a Map of Strings to Tokens.
-         * @param <K> The original Map key type.
-         * @param <V> The original Map value type.
          */
-        public <K, V> Token(Map<K, V> obj)
+        public Token(Map<?, ?> obj)
         {
             this.num = null;
             this.str = null;
@@ -646,6 +641,7 @@ public final class JSON
         }
 
         // TODO: Add other ease of use methods to Array and Object.
+        // TODO: Rename array and object getters to simplify names.
 
         /**
          * Gets the List this Token represents. Throws an exception if the Token doesn't represent a List.
@@ -1212,6 +1208,8 @@ public final class JSON
             return this.obj.get(field).getType();
         }
 
+        // TODO: Maybe change put methods to modifying existing tokens to keep order.
+
         /**
          * Treats the Token as an object, and adds null to the object. Throws an exception if the Token doesn't
          * represent an object.
@@ -1372,7 +1370,7 @@ public final class JSON
          *
          * @return The Object representation of the value of the Token.
          */
-        private Object get()
+        public Object get()
         {
             return switch(this.type)
             {
@@ -1386,9 +1384,95 @@ public final class JSON
         }
 
         /**
+         * Sets the Token to represent null.
+         */
+        public void set()
+        {
+            this.num = null;
+            this.str = null;
+            this.bol = null;
+            this.arr = null;
+            this.obj = null;
+
+            this.type = Type.NULL;
+        }
+
+        /**
+         * Sets the Token to represent a number.
+         * @param num The Number to represent.
+         */
+        public void set(Number num)
+        {
+            this.num = num;
+            this.str = null;
+            this.bol = null;
+            this.arr = null;
+            this.obj = null;
+
+            this.type = Type.NUMBER;
+        }
+
+        /**
+         * Sets the Token to represent a string.
+         * @param str The String to represent.
+         */
+        public void set(String str)
+        {
+            this.num = null;
+            this.str = str;
+            this.bol = null;
+            this.arr = null;
+            this.obj = null;
+
+            this.type = Type.STRING;
+        }
+
+        /**
+         * Sets the Token to represent a boolean.
+         * @param bol The Boolean to represent.
+         */
+        public void set(Boolean bol)
+        {
+            this.num = null;
+            this.str = null;
+            this.bol = bol;
+            this.arr = null;
+            this.obj = null;
+
+            this.type = Type.BOOLEAN;
+        }
+
+        /**
+         * Sets the Token to represent an array. The array is automatically converted to be a List of Tokens.
+         * @param arr The List to represent.
+         */
+        public void set(List<?> arr)
+        {
+            this.num = null;
+            this.str = null;
+            this.bol = null;
+            this.arr = convertArray(arr);
+            this.obj = null;
+
+            this.type = Type.ARRAY;
+        }
+
+        /**
+         * Sets the Token to represent an object. The object is automatically converted to be a Map of Strings to Tokens.
+         * @param obj The Map to represent.
+         */
+        public void set(Map<?, ?> obj)
+        {
+            this.num = null;
+            this.str = null;
+            this.bol = null;
+            this.arr = null;
+            this.obj = convertObject(obj);
+        }
+
+        /**
          * Gets the size of the Token, if it represents an array or an object. Throws an exception if the Token doesn't
          * represent an array or object.
-         *
          * @return The size of the Token.
          */
         public int size()
