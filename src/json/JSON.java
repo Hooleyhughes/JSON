@@ -428,14 +428,7 @@ public final class JSON
          */
         public Token()
         {
-            this.num = null;
-            this.str = null;
-            this.bol = null;
-            this.arr = null;
-            this.obj = null;
-
-            this.type = Type.NULL;
-
+            this.set();
             this.order = 0;
         }
 
@@ -446,14 +439,7 @@ public final class JSON
          */
         public Token(Number num)
         {
-            this.num = num;
-            this.str = null;
-            this.bol = null;
-            this.arr = null;
-            this.obj = null;
-
-            this.type = Type.NUMBER;
-
+            this.set(num);
             this.order = 0;
         }
 
@@ -464,14 +450,7 @@ public final class JSON
          */
         public Token(String str)
         {
-            this.num = null;
-            this.str = str;
-            this.bol = null;
-            this.arr = null;
-            this.obj = null;
-
-            this.type = Type.STRING;
-
+            this.set(str);
             this.order = 0;
         }
 
@@ -482,14 +461,7 @@ public final class JSON
          */
         public Token(Boolean bol)
         {
-            this.num = null;
-            this.str = null;
-            this.bol = bol;
-            this.arr = null;
-            this.obj = null;
-
-            this.type = Type.BOOLEAN;
-
+            this.set(bol);
             this.order = 0;
         }
 
@@ -499,14 +471,7 @@ public final class JSON
          */
         public Token(List<?> arr)
         {
-            this.num = null;
-            this.str = null;
-            this.bol = null;
-            this.arr = convertArray(arr);
-            this.obj = null;
-
-            this.type = Type.ARRAY;
-
+            this.set(arr);
             this.order = 0;
         }
 
@@ -516,14 +481,21 @@ public final class JSON
          */
         public Token(Map<?, ?> obj)
         {
-            this.num = null;
-            this.str = null;
-            this.bol = null;
-            this.arr = null;
-            this.obj = convertObject(obj);
+            this.set(obj);
+            this.order = 0;
+        }
 
-            this.type = Type.OBJECT;
-
+        /**
+         * Creates a new Token to represent the given object. If the given object is an instance of a data type that can
+         * be represented in the JSON, then it is cast that before adding to ensure the correct data type is
+         * represented. If the passed object is a Token, then this is set to the value of the passed Token. Otherwise,
+         * if the passed object doesn't represent any of the supported data types, it is instead passed using the
+         * built-in toString() method, and is represented as a String.
+         * @param object The object to represent.
+         */
+        public Token(Object object)
+        {
+            this.set(object);
             this.order = 0;
         }
 
@@ -640,9 +612,6 @@ public final class JSON
             return this.bol;
         }
 
-        // TODO: Add other ease of use methods to Array and Object.
-        // TODO: Rename array and object getters to simplify names.
-
         /**
          * Gets the List this Token represents. Throws an exception if the Token doesn't represent a List.
          *
@@ -655,26 +624,13 @@ public final class JSON
         }
 
         /**
-         * Treats the Token as an array, and gets the element at the specified index. Throws an exception if the Token
-         * doesn't represent an array.
-         *
-         * @param index The index at which to get the element.
-         * @return The value at the specified index.
-         */
-        public Object getAsArray(int index)
-        {
-            this.checkType(Type.ARRAY);
-            return this.arr.get(index).get();
-        }
-
-        /**
          * Treats the Token as an array, and gets the element at the specified index as a Token. Throws an exception if
          * the Token doesn't represent an array.
          *
          * @param index The index at which to get the element.
          * @return The Token at the specified index.
          */
-        public Token getAsArrayToken(int index)
+        public Token getToken(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index);
@@ -687,7 +643,7 @@ public final class JSON
          * @param index The index at which to get the element.
          * @return The Number at the specified index.
          */
-        public Number getAsArrayNumber(int index)
+        public Number getNumber(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index).getNumber();
@@ -700,7 +656,7 @@ public final class JSON
          * @param index The index at which to get the element.
          * @return The byte at the specified index.
          */
-        public byte getAsArrayByte(int index)
+        public byte getByte(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index).getByte();
@@ -713,7 +669,7 @@ public final class JSON
          * @param index The index at which to get the element.
          * @return The short at the specified index.
          */
-        public short getAsArrayShort(int index)
+        public short getShort(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index).getShort();
@@ -726,7 +682,7 @@ public final class JSON
          * @param index The index at which to get the element.
          * @return The integer at the specified index.
          */
-        public int getAsArrayInteger(int index)
+        public int getInteger(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index).getInteger();
@@ -739,7 +695,7 @@ public final class JSON
          * @param index The index at which to get the element.
          * @return The long at the specified index.
          */
-        public long getAsArrayLong(int index)
+        public long getLong(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index).getLong();
@@ -752,7 +708,7 @@ public final class JSON
          * @param index The index at which to get the element.
          * @return The float at the specified index.
          */
-        public float getAsArrayFloat(int index)
+        public float getFloat(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index).getFloat();
@@ -765,7 +721,7 @@ public final class JSON
          * @param index The index at which to get the element.
          * @return The double at the specified index.
          */
-        public double getAsArrayDouble(int index)
+        public double getDouble(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index).getDouble();
@@ -778,7 +734,7 @@ public final class JSON
          * @param index The index at which to get the element.
          * @return The String at the specified index.
          */
-        public String getAsArrayString(int index)
+        public String getString(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index).getString();
@@ -791,7 +747,7 @@ public final class JSON
          * @param index The index at which to get the element.
          * @return The Boolean at the specified index.
          */
-        public Boolean getAsArrayBoolean(int index)
+        public Boolean getBoolean(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index).getBoolean();
@@ -804,7 +760,7 @@ public final class JSON
          * @param index The index at which to get the element.
          * @return The List of Tokens at the specified index.
          */
-        public List<Token> getAsArrayArray(int index)
+        public List<Token> getArray(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index).getArray();
@@ -818,10 +774,23 @@ public final class JSON
          * @param index The index at which to get the element.
          * @return The Map of Strings to Tokens at the specified index.
          */
-        public Map<String, Token> getAsArrayObject(int index)
+        public Map<String, Token> getObject(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index).getObject();
+        }
+
+        /**
+         * Treats the Token as an array, and gets the element at the specified index. Throws an exception if the Token
+         * doesn't represent an array.
+         *
+         * @param index The index at which to get the element.
+         * @return The value at the specified index.
+         */
+        public Object get(int index)
+        {
+            this.checkType(Type.ARRAY);
+            return this.arr.get(index).get();
         }
 
         /**
@@ -831,7 +800,7 @@ public final class JSON
          * @param index The index at which to get the element.
          * @return The type of the element at the specified index.
          */
-        public Type getAsArrayType(int index)
+        public Type getType(int index)
         {
             this.checkType(Type.ARRAY);
             return this.arr.get(index).getType();
@@ -843,7 +812,7 @@ public final class JSON
          *
          * @param token The Token to add to the array.
          */
-        public void addAsArray(Token token)
+        public void add(Token token)
         {
             this.checkType(Type.ARRAY);
             this.arr.add(token);
@@ -855,7 +824,7 @@ public final class JSON
          *
          * @param number The Number to add to the array.
          */
-        public void addAsArray(Number number)
+        public void add(Number number)
         {
             this.checkType(Type.ARRAY);
             this.arr.add(new Token(number));
@@ -867,7 +836,7 @@ public final class JSON
          *
          * @param string The String to add to the array.
          */
-        public void addAsArray(String string)
+        public void add(String string)
         {
             this.checkType(Type.ARRAY);
             this.arr.add(new Token(string));
@@ -879,7 +848,7 @@ public final class JSON
          *
          * @param bool The Boolean to add to the array.
          */
-        public void addAsArray(Boolean bool)
+        public void add(Boolean bool)
         {
             this.checkType(Type.ARRAY);
             this.arr.add(new Token(bool));
@@ -892,7 +861,7 @@ public final class JSON
          *
          * @param array The List to add to the array.
          */
-        public void addAsArray(List<?> array)
+        public void add(List<?> array)
         {
             this.checkType(Type.ARRAY);
             this.arr.add(new Token(array));
@@ -905,7 +874,19 @@ public final class JSON
          *
          * @param object The Map to add to the array.
          */
-        public void addAsArray(Map<?, ?> object)
+        public void add(Map<?, ?> object)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.add(new Token(object));
+        }
+
+        /**
+         * Treats the Token as an array, and adds the specified Object to the array. The Object is automatically
+         * converted to a type the JSON can store, and if the Object doesn't represent anything, then the built-in
+         * toString() method is called on the object. Throws an exception if the Token doesn't represent an array.
+         * @param object The Object to add to the array.
+         */
+        public void add(Object object)
         {
             this.checkType(Type.ARRAY);
             this.arr.add(new Token(object));
@@ -918,7 +899,7 @@ public final class JSON
          * @param index The index to add the Token at.
          * @param token The Token to add to the array.
          */
-        public void addAsArray(int index, Token token)
+        public void add(int index, Token token)
         {
             this.checkType(Type.ARRAY);
             this.arr.add(index, token);
@@ -931,7 +912,7 @@ public final class JSON
          * @param index  The index to add the Token at.
          * @param number The Number to add to the array.
          */
-        public void addAsArray(int index, Number number)
+        public void add(int index, Number number)
         {
             this.checkType(Type.ARRAY);
             this.arr.add(index, new Token(number));
@@ -944,7 +925,7 @@ public final class JSON
          * @param index  The index to add the Token at.
          * @param string The String to add to the array.
          */
-        public void addAsArray(int index, String string)
+        public void add(int index, String string)
         {
             this.checkType(Type.ARRAY);
             this.arr.add(index, new Token(string));
@@ -957,7 +938,7 @@ public final class JSON
          * @param index The index to add the Token at.
          * @param bool  The Boolean to add to the array.
          */
-        public void addAsArray(int index, Boolean bool)
+        public void add(int index, Boolean bool)
         {
             this.checkType(Type.ARRAY);
             this.arr.add(index, new Token(bool));
@@ -971,7 +952,7 @@ public final class JSON
          * @param index The index to add the Token at.
          * @param array The List to add to the array.
          */
-        public void addAsArray(int index, List<?> array)
+        public void add(int index, List<?> array)
         {
             this.checkType(Type.ARRAY);
             this.arr.add(index, new Token(array));
@@ -985,34 +966,283 @@ public final class JSON
          * @param index  The index to add the Token at.
          * @param object The Map to add to the array.
          */
-        public void addAsArray(int index, Map<?, ?> object)
+        public void add(int index, Map<?, ?> object)
         {
             this.checkType(Type.ARRAY);
             this.arr.add(index, new Token(object));
         }
 
         /**
-         * Treats the Token as an array, and returns the size of the array. Throws an exception if the Token doesn't
-         * represent an array.
-         *
-         * @return The size of the array.
+         * Treats the Token as an array, and adds the specified Object to the array at the given index. The Object is
+         * automatically converted to a type the JSON can store, and if the Object doesn't represent anything, then the
+         * built-in toString() method is called on the object. Throws an exception if the Token doesn't represent an
+         * array.
+         * @param index The index to add the Token at.
+         * @param object The Object to add to the array.
          */
-        public int sizeAsArray()
+        public void add(int index, Object object)
         {
             this.checkType(Type.ARRAY);
-            return this.arr.size();
+            this.arr.add(index, new Token(object));
         }
 
         /**
-         * Treats the Token as an array, and performs the given action on all elements in the array. Throws an exception
-         * if the Token doesn't represent an array.
-         *
-         * @param action The action to be performed.
+         * Treats the Token as an array, and sets the element at the specified index to the given Token. Throws an
+         * exception if the Token doesn't represent an array.
+         * @param index The index to set the Token at.
+         * @param token The Token to set the element to.
          */
-        public void forEachAsArray(Consumer<? super Token> action)
+        public void set(int index, Token token)
         {
             this.checkType(Type.ARRAY);
-            this.arr.forEach(action);
+            this.arr.get(index).set(token);
+        }
+
+        /**
+         * Treats the Token as an array, and sets the element at the specified index to the given Number. Throws an
+         * exception if the Token doesn't represent an array.
+         * @param index The index to set the Token at.
+         * @param number The Number to set the element to.
+         */
+        public void set(int index, Number number)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).set(number);
+        }
+
+        /**
+         * Treats the Token as an array, and sets the element at the specified index to the given String. Throws an
+         * exception if the Token doesn't represent an array.
+         * @param index The index to set the Token at.
+         * @param string The String to set the element to.
+         */
+        public void set(int index, String string)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).set(string);
+        }
+
+        /**
+         * Treats the Token as an array, and sets the element at the specified index to the given Boolean. Throws an
+         * exception if the Token doesn't represent an array.
+         * @param index The index to set the Token at.
+         * @param bool The Boolean to set the element to.
+         */
+        public void set(int index, Boolean bool)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).set(bool);
+        }
+
+        /**
+         * Treats the Token as an array, and sets the element at the specified index to the given List of any type. The
+         * list is automatically converted into a List of Tokens. Throws an exception if the Token doesn't represent an
+         * array.
+         * @param index The index to set the Token at.
+         * @param array The List to set the element to.
+         */
+        public void set(int index, List<?> array)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).set(arr);
+        }
+
+        /**
+         * Treats the Token as an array, and sets the element at the specified index to the given Map of any type. The
+         * Map is automatically converted into a Map of Strings to Tokens. Throws an exception if the Token doesn't
+         * represent an array.
+         * @param index The index to set the Token at.
+         * @param object The Map to set the element to.
+         */
+        public void set(int index, Map<?, ?> object)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).set(object);
+        }
+
+        /**
+         * Treats the Token as an array, and sets the element at the specified index to the given Object. The Object is
+         * automatically converted to a type the JSON can store, and if the Object doesn't represent anything, then the
+         * built-in toString() method is called on the object. Throws an exception if the Token doesn't represent an
+         * array.
+         * @param index The index to set the Token at.
+         * @param object The Object to add to the array.
+         */
+        public void set(int index, Object object)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).set(object);
+        }
+
+        /**
+         * Treats the Token as an array, and removes the Token at the given index. Throws an exception if the Token
+         * doesn't represent an array.
+         * @param index The index of the Token to remove.
+         * @return The Token removed from the array.
+         */
+        public Token removeToken(int index)
+        {
+            this.checkType(Type.ARRAY);
+            return this.arr.remove(index);
+        }
+
+        /**
+         * Treats the Token as an array, and removes the Number at the given index. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the Number to remove.
+         * @return The Number removed from the array.
+         */
+        public Number removeNumber(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getNumber();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the byte at the given index. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the byte to remove.
+         * @return The byte removed from the array.
+         */
+        public byte removeByte(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getByte();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the short at the given index. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the short to remove.
+         * @return The short removed from the array.
+         */
+        public short removeShort(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getShort();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the integer at the given index. If the element being removed
+         * doesn't represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * array.
+         * @param index The index of the integer to remove.
+         * @return The integer removed from the array.
+         */
+        public int removeInteger(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getInteger();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the long at the given index. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the long to remove.
+         * @return The long removed from the array.
+         */
+        public long removeLong(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getLong();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the float at the given index. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the float to remove.
+         * @return The float removed from the array.
+         */
+        public float removeFloat(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getFloat();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the double at the given index. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the double to remove.
+         * @return The double removed from the array.
+         */
+        public double removeDouble(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getDouble();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the String at the given index. If the element being removed doesn't
+         * represent a String, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the String to remove.
+         * @return The String removed from the array.
+         */
+        public String removeString(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.STRING);
+            return this.arr.remove(index).getString();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the Boolean at the given index. If the element being removed
+         * doesn't represent a Boolean, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * array.
+         * @param index The index of the Boolean to remove.
+         * @return The Boolean removed from the array.
+         */
+        public Boolean removeBoolean(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.BOOLEAN);
+            return this.arr.remove(index).getBoolean();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the List of Tokens at the given index. If the element being removed
+         * doesn't represent an array, then nothing is remove. Throws an exception if the Token doesn't represent an
+         * array.
+         * @param index The index of the List to remove.
+         * @return The List removed from the array.
+         */
+        public List<Token> removeArray(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.ARRAY);
+            return this.arr.remove(index).getArray();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the Map of Strings to Tokens at the given index. If the element
+         * being removed doesn't represent an array, then nothing is removed. Throws an exception if the Token doesn't
+         * represent an array.
+         * @param index The index of the Map to remove.
+         * @return The Map removed from the array.
+         */
+        public Map<String, Token> removeObject(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.OBJECT);
+            return this.arr.remove(index).getObject();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the Object at the given index. If the element being removed doesn't
+         * represent an array, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the Object to remove.
+         * @return The Object removed from the array.
+         */
+        public Object remove(int index)
+        {
+            this.checkType(Type.ARRAY);
+            return this.arr.remove(index).get();
         }
 
         /**
@@ -1033,7 +1263,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The Object at the specified field.
          */
-        public Object getAsObject(String field)
+        public Object get(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).get();
@@ -1046,7 +1276,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The Token at the specified field.
          */
-        public Token getAsObjectToken(String field)
+        public Token getToken(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field);
@@ -1059,7 +1289,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The Number at the specified field.
          */
-        public Number getAsObjectNumber(String field)
+        public Number getNumber(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).getNumber();
@@ -1072,7 +1302,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The byte at the specified field.
          */
-        public byte getAsObjectByte(String field)
+        public byte getByte(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).getByte();
@@ -1085,7 +1315,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The short at the specified field.
          */
-        public short getAsObjectShort(String field)
+        public short getShort(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).getShort();
@@ -1098,7 +1328,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The integer at the specified field.
          */
-        public int getAsObjectInteger(String field)
+        public int getInteger(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).getInteger();
@@ -1111,7 +1341,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The long at the specified field.
          */
-        public long getAsObjectLong(String field)
+        public long getLong(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).getLong();
@@ -1124,7 +1354,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The float at the specified field.
          */
-        public float getAsObjectFloat(String field)
+        public float getFloat(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).getFloat();
@@ -1137,7 +1367,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The double at the specified field.
          */
-        public double getAsObjectDouble(String field)
+        public double getDouble(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).getDouble();
@@ -1150,7 +1380,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The String at the specified field.
          */
-        public String getAsObjectString(String field)
+        public String getString(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).getString();
@@ -1163,7 +1393,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The Boolean at the specified field.
          */
-        public Boolean getAsObjectBoolean(String field)
+        public Boolean getBoolean(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).getBoolean();
@@ -1176,7 +1406,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The List of Tokens at the specified field.
          */
-        public List<Token> getAsObjectArray(String field)
+        public List<Token> getArray(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).getArray();
@@ -1189,7 +1419,7 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The Map of Strings to Tokens at the specified field.
          */
-        public Map<String, Token> getAsObjectObject(String field)
+        public Map<String, Token> getObject(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).getObject();
@@ -1202,24 +1432,10 @@ public final class JSON
          * @param field The key at which to get the field.
          * @return The type of the field at the specified field.
          */
-        public Type getAsObjectType(String field)
+        public Type getType(String field)
         {
             this.checkType(Type.OBJECT);
             return this.obj.get(field).getType();
-        }
-
-        // TODO: Maybe change put methods to modifying existing tokens to keep order.
-
-        /**
-         * Treats the Token as an object, and adds null to the object. Throws an exception if the Token doesn't
-         * represent an object.
-         *
-         * @param field The String representing the field name.
-         */
-        public void putAsObject(String field)
-        {
-            this.checkType(Type.OBJECT);
-            this.obj.put(field, new Token());
         }
 
         /**
@@ -1229,10 +1445,14 @@ public final class JSON
          * @param field The String representing the field name.
          * @param token The Token representing the field value.
          */
-        public void putAsObject(String field, Token token)
+        public void put(String field, Token token)
         {
             this.checkType(Type.OBJECT);
-            this.obj.put(field, token);
+
+            if(this.obj.containsKey(field))
+                this.obj.get(field).set(token);
+            else
+                this.obj.put(field, token);
         }
 
         /**
@@ -1242,10 +1462,14 @@ public final class JSON
          * @param field  The String representing the field name.
          * @param number The Number representing the field value.
          */
-        public void putAsObject(String field, Number number)
+        public void put(String field, Number number)
         {
             this.checkType(Type.OBJECT);
-            this.obj.put(field, new Token(number));
+
+            if(this.obj.containsKey(field))
+                this.obj.get(field).set(number);
+            else
+                this.obj.put(field, new Token(number));
         }
 
         /**
@@ -1255,10 +1479,14 @@ public final class JSON
          * @param field  The String representing the field name.
          * @param string The String representing the field value.
          */
-        public void putAsObject(String field, String string)
+        public void put(String field, String string)
         {
             this.checkType(Type.OBJECT);
-            this.obj.put(field, new Token(string));
+
+            if(this.obj.containsKey(field))
+                this.obj.get(field).set(string);
+            else
+                this.obj.put(field, new Token(string));
         }
 
         /**
@@ -1268,10 +1496,14 @@ public final class JSON
          * @param field The String representing the field name.
          * @param bool  The Token representing the field value.
          */
-        public void putAsObject(String field, Boolean bool)
+        public void put(String field, Boolean bool)
         {
             this.checkType(Type.OBJECT);
-            this.obj.put(field, new Token(bool));
+
+            if(this.obj.containsKey(field))
+                this.obj.get(field).set(bool);
+            else
+                this.obj.put(field, new Token(bool));
         }
 
         /**
@@ -1281,10 +1513,14 @@ public final class JSON
          * @param field The String representing the field name.
          * @param array The List of any type representing the field value.
          */
-        public void putAsObject(String field, List<?> array)
+        public void put(String field, List<?> array)
         {
             this.checkType(Type.OBJECT);
-            this.obj.put(field, new Token(array));
+
+            if(this.obj.containsKey(field))
+                this.obj.get(field).set(array);
+            else
+                this.obj.put(field, new Token(array));
         }
 
         /**
@@ -1294,72 +1530,193 @@ public final class JSON
          * @param field  The String representing the field name.
          * @param object The Map of any type representing the field value.
          */
-        public void putAsObject(String field, Map<?, ?> object)
+        public void put(String field, Map<?, ?> object)
         {
             this.checkType(Type.OBJECT);
-            this.obj.put(field, new Token(object));
+
+            if(this.obj.containsKey(field))
+                this.obj.get(field).set(object);
+            else
+                this.obj.put(field, new Token(object));
         }
 
         /**
-         * Treats the Token as an object, and returns the size of the object. Throws an exception if the Token doesn't
+         * Treats the Token as an object, and adds the specified Object to the object. The Object is automatically
+         * converted to a type the JSON can store, and if the Object doesn't represent anything, then the built-in
+         * toString() method is called on the object. Throws an exception if the Token doesn't represent an object.
+         * @param field The String representing the field name.
+         * @param object The Object representing the field value.
+         */
+        public void put(String field, Object object)
+        {
+            this.checkType(Type.OBJECT);
+
+            if(this.obj.containsKey(field))
+                this.obj.get(field).set(object);
+            else
+                this.obj.put(field, new Token(object));
+        }
+
+        /**
+         * Treats the Token as an object, and removes the Token at the given field. Throws an exception if the Token
+         * doesn't represent an object.
+         * @param field The String representing the name of the field.
+         * @return The Token removed from the object.
+         */
+        public Token removeToken(String field)
+        {
+            this.checkType(Type.OBJECT);
+            return this.obj.remove(field);
+        }
+
+        /**
+         * Treats the Token as an object, and removes the Number at the given field. If the element being removed
+         * doesn't represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * object.
+         * @param field The String representing the name of the field.
+         * @return The Number removed from the object.
+         */
+        public Number removeNumber(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getNumber();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the byte at the given field. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an object.
+         * @param field The String representing the name of the field.
+         * @return The byte removed from the object.
+         */
+        public byte removeByte(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getByte();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the short at the given field. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an object.
+         * @param field The String representing the name of the field.
+         * @return The short removed from the object.
+         */
+        public short removeShort(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getShort();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the integer at the given field. If the element being removed
+         * doesn't represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * object.
+         * @param field The String representing the name of the field.
+         * @return The integer removed from the object.
+         */
+        public int removeInteger(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getInteger();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the long at the given field. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an object.
+         * @param field The String representing the name of the field.
+         * @return The Number removed from the object.
+         */
+        public long removeLong(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getLong();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the float at the given field. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an object.
+         * @param field The String representing the name of the field.
+         * @return The float removed from the object.
+         */
+        public float removeFloat(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getFloat();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the double at the given field. If the element being removed
+         * doesn't represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * object.
+         * @param field The String representing the name of the field.
+         * @return The double removed from the object.
+         */
+        public double removeDouble(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getDouble();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the String at the given field. If the element being removed
+         * doesn't represent a String, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * object.
+         * @param field The String representing the name of the field.
+         * @return The String removed from the object.
+         */
+        public String removeString(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.STRING);
+            return this.obj.remove(field).getString();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the Boolean at the given field. If the element being removed
+         * doesn't represent a Boolean, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * object.
+         * @param field The String representing the name of the field.
+         * @return The Boolean removed from the object.
+         */
+        public Boolean removeBoolean(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.BOOLEAN);
+            return this.obj.remove(field).getBoolean();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the List of Tokens at the given field. If the element being
+         * removed doesn't represent an array, then nothing is removed. Throws an exception if the Token doesn't
          * represent an object.
-         *
-         * @return The size of the object.
+         * @param field The String representing the name of the field.
+         * @return The List removed from the object.
          */
-        public int sizeAsObject()
+        public List<Token> removeArray(String field)
         {
             this.checkType(Type.OBJECT);
-            return this.obj.size();
+            this.obj.get(field).checkType(Type.ARRAY);
+            return this.obj.remove(field).getArray();
         }
 
         /**
-         * Treats the Token as an object, and performs the given action on all elements in the object. Throws an
-         * exception if the Token doesn't represent an object.
-         *
-         * @param action The action to be performed.
+         * Treats the Token as an object, and removes the Map of Strings to Tokens at the given field. If the element
+         * being removed doesn't represent an object, then nothing is removed. Throws an exception if the Token doesn't
+         * represent an object.
+         * @param field The String representing the name of the field.
+         * @return The Map removed from the object.
          */
-        public void forEachAsObject(BiConsumer<? super String, ? super Token> action)
+        public Map<String, Token> removeObject(String field)
         {
             this.checkType(Type.OBJECT);
-            this.obj.forEach(action);
-        }
-
-        /**
-         * Gets the type of the Token. The type represents the type of data in the JSON.
-         *
-         * @return the Type.
-         */
-        public Type getType()
-        {
-            return this.type;
-        }
-
-        /**
-         * Gets the order of the Token. The order value determines where in the JSON object the Token is put. While the
-         * order makes very little functional difference to the JSON object, it helps maintain readability and
-         * consistency when modifying existing JSON files. The fields in a JSON object are sorted by their order, in
-         * ascending order. This means lower valued Tokens are placed closer to the top of the JSON object. This is most
-         * noticeable when compiling the JSON object.
-         *
-         * @return The integer representation of the order.
-         */
-        public int getOrder()
-        {
-            return this.order;
-        }
-
-        /**
-         * Sets the order of the Token. The order value determines where in the JSON object the Token is put. While the
-         * order makes very little function difference to the JSON object, it helps maintain readability and
-         * consistency when modifying existing JSON files. The fields in a JSON object are sorted by their order, in
-         * ascending order. This means lower valued Tokens are placed closer to the top of the JSON object. This is most
-         * noticeable when compiling the JSON object.
-         *
-         * @param order The integer representation of the order.
-         */
-        public void setOrder(int order)
-        {
-            this.order = order;
+            this.obj.get(field).checkType(Type.OBJECT);
+            return this.obj.remove(field).getObject();
         }
 
         /**
@@ -1471,20 +1828,63 @@ public final class JSON
         }
 
         /**
+         * Sets the Token to represent the given object. If the given object is an instance of a data type that
+         * can be represented in the JSON, then it is cast that before adding to ensure the correct data type is
+         * represented. If the passed object is a Token, then this is set to the value of the passed Token. Otherwise,
+         * if the passed object doesn't represent any of the supported data types, it is instead passed using the
+         * built-in toString() method, and is represented as a String.
+         * @param object The object to represent.
+         */
+        public void set(Object object)
+        {
+            if(object instanceof Number x)
+                this.set(x);
+            else if(object instanceof String x)
+                this.set(x);
+            else if(object instanceof Boolean x)
+                this.set(x);
+            else if(object == null)
+                this.set();
+            else if(object instanceof List<?> x)
+                this.set(x);
+            else if(object instanceof Map<?, ?> x)
+                this.set(x);
+            else if(object instanceof Token x)
+                this.set(x.get());
+            else
+                this.set(object.toString());
+        }
+
+        /**
          * Gets the size of the Token, if it represents an array or an object. Throws an exception if the Token doesn't
          * represent an array or object.
          * @return The size of the Token.
          */
         public int size()
         {
-            return switch(this.type)
-            {
-                case ARRAY -> this.arr.size();
-                case OBJECT -> this.obj.size();
+            if(this.type == Type.ARRAY)
+                return this.arr.size();
 
-                default ->
-                        throw new WrongDataType("Expected " + Type.ARRAY + " or " + Type.OBJECT + ", got " + this.type);
-            };
+            if(this.type == Type.OBJECT)
+                return this.obj.size();
+
+            throw new WrongDataType("Expected " + Type.ARRAY + " or " + Type.OBJECT + ", got " + this.type);
+        }
+
+        /**
+         * Tests if the Token is empty, if it represents an array or an object. Throws an exception if the Token doesn't
+         * represent an array or object.
+         * @return Is the Token is empty.
+         */
+        public boolean isEmpty()
+        {
+            if(this.type == Type.ARRAY)
+                return this.arr.isEmpty();
+
+            if(this.type == Type.OBJECT)
+                return this.obj.isEmpty();
+
+            throw new WrongDataType("Expected " + Type.ARRAY + " or " + Type.OBJECT + ", got " + this.type);
         }
 
         /**
@@ -1507,6 +1907,44 @@ public final class JSON
         {
             this.checkType(Type.OBJECT);
             this.obj.forEach(action);
+        }
+
+        /**
+         * Gets the type of the Token. The type represents the type of data in the JSON.
+         *
+         * @return the Type.
+         */
+        public Type getType()
+        {
+            return this.type;
+        }
+
+        /**
+         * Gets the order of the Token. The order value determines where in the JSON object the Token is put. While the
+         * order makes very little functional difference to the JSON object, it helps maintain readability and
+         * consistency when modifying existing JSON files. The fields in a JSON object are sorted by their order, in
+         * ascending order. This means lower valued Tokens are placed closer to the top of the JSON object. This is most
+         * noticeable when compiling the JSON object.
+         *
+         * @return The integer representation of the order.
+         */
+        public int getOrder()
+        {
+            return this.order;
+        }
+
+        /**
+         * Sets the order of the Token. The order value determines where in the JSON object the Token is put. While the
+         * order makes very little function difference to the JSON object, it helps maintain readability and
+         * consistency when modifying existing JSON files. The fields in a JSON object are sorted by their order, in
+         * ascending order. This means lower valued Tokens are placed closer to the top of the JSON object. This is most
+         * noticeable when compiling the JSON object.
+         *
+         * @param order The integer representation of the order.
+         */
+        public void setOrder(int order)
+        {
+            this.order = order;
         }
 
         /**
