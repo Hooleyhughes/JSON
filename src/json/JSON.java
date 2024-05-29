@@ -612,8 +612,6 @@ public final class JSON
             return this.bol;
         }
 
-        // TODO: Add other ease of use methods to Array and Object.
-
         /**
          * Gets the List this Token represents. Throws an exception if the Token doesn't represent a List.
          *
@@ -1077,6 +1075,177 @@ public final class JSON
         }
 
         /**
+         * Treats the Token as an array, and removes the Token at the given index. Throws an exception if the Token
+         * doesn't represent an array.
+         * @param index The index of the Token to remove.
+         * @return The Token removed from the array.
+         */
+        public Token removeToken(int index)
+        {
+            this.checkType(Type.ARRAY);
+            return this.arr.remove(index);
+        }
+
+        /**
+         * Treats the Token as an array, and removes the Number at the given index. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the Number to remove.
+         * @return The Number removed from the array.
+         */
+        public Number removeNumber(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getNumber();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the byte at the given index. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the byte to remove.
+         * @return The byte removed from the array.
+         */
+        public byte removeByte(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getByte();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the short at the given index. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the short to remove.
+         * @return The short removed from the array.
+         */
+        public short removeShort(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getShort();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the integer at the given index. If the element being removed
+         * doesn't represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * array.
+         * @param index The index of the integer to remove.
+         * @return The integer removed from the array.
+         */
+        public int removeInteger(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getInteger();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the long at the given index. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the long to remove.
+         * @return The long removed from the array.
+         */
+        public long removeLong(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getLong();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the float at the given index. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the float to remove.
+         * @return The float removed from the array.
+         */
+        public float removeFloat(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getFloat();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the double at the given index. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the double to remove.
+         * @return The double removed from the array.
+         */
+        public double removeDouble(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.NUMBER);
+            return this.arr.remove(index).getDouble();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the String at the given index. If the element being removed doesn't
+         * represent a String, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the String to remove.
+         * @return The String removed from the array.
+         */
+        public String removeString(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.STRING);
+            return this.arr.remove(index).getString();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the Boolean at the given index. If the element being removed
+         * doesn't represent a Boolean, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * array.
+         * @param index The index of the Boolean to remove.
+         * @return The Boolean removed from the array.
+         */
+        public Boolean removeBoolean(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.BOOLEAN);
+            return this.arr.remove(index).getBoolean();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the List of Tokens at the given index. If the element being removed
+         * doesn't represent an array, then nothing is remove. Throws an exception if the Token doesn't represent an
+         * array.
+         * @param index The index of the List to remove.
+         * @return The List removed from the array.
+         */
+        public List<Token> removeArray(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.ARRAY);
+            return this.arr.remove(index).getArray();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the Map of Strings to Tokens at the given index. If the element
+         * being removed doesn't represent an array, then nothing is removed. Throws an exception if the Token doesn't
+         * represent an array.
+         * @param index The index of the Map to remove.
+         * @return The Map removed from the array.
+         */
+        public Map<String, Token> removeObject(int index)
+        {
+            this.checkType(Type.ARRAY);
+            this.arr.get(index).checkType(Type.OBJECT);
+            return this.arr.remove(index).getObject();
+        }
+
+        /**
+         * Treats the Token as an array, and removes the Object at the given index. If the element being removed doesn't
+         * represent an array, then nothing is removed. Throws an exception if the Token doesn't represent an array.
+         * @param index The index of the Object to remove.
+         * @return The Object removed from the array.
+         */
+        public Object remove(int index)
+        {
+            this.checkType(Type.ARRAY);
+            return this.arr.remove(index).get();
+        }
+
+        /**
          * Gets the Map this Token represents. Throws an exception if the Token doesn't represent a Map.
          *
          * @return The Map of String to Tokens the Token represents.
@@ -1269,8 +1438,6 @@ public final class JSON
             return this.obj.get(field).getType();
         }
 
-        // TODO: Maybe change put methods to modifying existing tokens to keep order.
-
         /**
          * Treats the Token as an object, and adds the specified Token to the object. Throws an exception if the Token
          * doesn't represent an object.
@@ -1388,6 +1555,168 @@ public final class JSON
                 this.obj.get(field).set(object);
             else
                 this.obj.put(field, new Token(object));
+        }
+
+        /**
+         * Treats the Token as an object, and removes the Token at the given field. Throws an exception if the Token
+         * doesn't represent an object.
+         * @param field The String representing the name of the field.
+         * @return The Token removed from the object.
+         */
+        public Token removeToken(String field)
+        {
+            this.checkType(Type.OBJECT);
+            return this.obj.remove(field);
+        }
+
+        /**
+         * Treats the Token as an object, and removes the Number at the given field. If the element being removed
+         * doesn't represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * object.
+         * @param field The String representing the name of the field.
+         * @return The Number removed from the object.
+         */
+        public Number removeNumber(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getNumber();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the byte at the given field. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an object.
+         * @param field The String representing the name of the field.
+         * @return The byte removed from the object.
+         */
+        public byte removeByte(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getByte();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the short at the given field. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an object.
+         * @param field The String representing the name of the field.
+         * @return The short removed from the object.
+         */
+        public short removeShort(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getShort();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the integer at the given field. If the element being removed
+         * doesn't represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * object.
+         * @param field The String representing the name of the field.
+         * @return The integer removed from the object.
+         */
+        public int removeInteger(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getInteger();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the long at the given field. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an object.
+         * @param field The String representing the name of the field.
+         * @return The Number removed from the object.
+         */
+        public long removeLong(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getLong();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the float at the given field. If the element being removed doesn't
+         * represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an object.
+         * @param field The String representing the name of the field.
+         * @return The float removed from the object.
+         */
+        public float removeFloat(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getFloat();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the double at the given field. If the element being removed
+         * doesn't represent a Number, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * object.
+         * @param field The String representing the name of the field.
+         * @return The double removed from the object.
+         */
+        public double removeDouble(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.NUMBER);
+            return this.obj.remove(field).getDouble();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the String at the given field. If the element being removed
+         * doesn't represent a String, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * object.
+         * @param field The String representing the name of the field.
+         * @return The String removed from the object.
+         */
+        public String removeString(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.STRING);
+            return this.obj.remove(field).getString();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the Boolean at the given field. If the element being removed
+         * doesn't represent a Boolean, then nothing is removed. Throws an exception if the Token doesn't represent an
+         * object.
+         * @param field The String representing the name of the field.
+         * @return The Boolean removed from the object.
+         */
+        public Boolean removeBoolean(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.BOOLEAN);
+            return this.obj.remove(field).getBoolean();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the List of Tokens at the given field. If the element being
+         * removed doesn't represent an array, then nothing is removed. Throws an exception if the Token doesn't
+         * represent an object.
+         * @param field The String representing the name of the field.
+         * @return The List removed from the object.
+         */
+        public List<Token> removeArray(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.ARRAY);
+            return this.obj.remove(field).getArray();
+        }
+
+        /**
+         * Treats the Token as an object, and removes the Map of Strings to Tokens at the given field. If the element
+         * being removed doesn't represent an object, then nothing is removed. Throws an exception if the Token doesn't
+         * represent an object.
+         * @param field The String representing the name of the field.
+         * @return The Map removed from the object.
+         */
+        public Map<String, Token> removeObject(String field)
+        {
+            this.checkType(Type.OBJECT);
+            this.obj.get(field).checkType(Type.OBJECT);
+            return this.obj.remove(field).getObject();
         }
 
         /**
