@@ -1825,6 +1825,8 @@ public final class JSON
             this.bol = null;
             this.arr = null;
             this.obj = convertObject(obj);
+
+            this.type = Type.OBJECT;
         }
 
         /**
