@@ -1439,6 +1439,83 @@ public final class JSON
         }
 
         /**
+         * Treats the Token as an object, and checks if the field exists. Throws an exception if the Token doesn't
+         * represent an object.
+         * @param field The field to check.
+         * @return Whether the field exists in the object.
+         */
+        public boolean has(String field)
+        {
+            this.checkType(Type.OBJECT);
+            return this.obj.containsKey(field);
+        }
+
+        /**
+         * Treats the Token as an object, and checks if the field exists as a number. Throws an exception if the Token
+         * doesn't represent an object.
+         * @param field The field to check.
+         * @return Whether the field exists as a number in the object.
+         */
+        public boolean hasNumber(String field)
+        {
+            this.checkType(Type.OBJECT);
+            Token token = this.obj.get(field);
+            return token != null && token.type == Type.NUMBER;
+        }
+
+        /**
+         * Treats the Token as an object, and checks if the field exists as a string. Throws an exception if the Token
+         * doesn't represent an object.
+         * @param field The field to check.
+         * @return Whether the field exists as a string in the object.
+         */
+        public boolean hasString(String field)
+        {
+            this.checkType(Type.OBJECT);
+            Token token = this.obj.get(field);
+            return token != null && token.type == Type.STRING;
+        }
+
+        /**
+         * Treats the Token as an object, and checks if the field exists as a boolean. Throws an exception if the Token
+         * doesn't represent an object.
+         * @param field The field to check.
+         * @return Whether the field exists as a boolean in the object.
+         */
+        public boolean hasBoolean(String field)
+        {
+            this.checkType(Type.OBJECT);
+            Token token = this.obj.get(field);
+            return token != null && token.type == Type.BOOLEAN;
+        }
+
+        /**
+         * Treats the Token as an object, and checks if the field exists as an array. Throws an exception if the Token
+         * doesn't represent an object.
+         * @param field The field to check.
+         * @return Whether the field exists as an array in the object.
+         */
+        public boolean hasArray(String field)
+        {
+            this.checkType(Type.OBJECT);
+            Token token = this.obj.get(field);
+            return token != null && token.type == Type.ARRAY;
+        }
+
+        /**
+         * Treats the Token as an object, and checks if the field exists as an object. Throws an exception if the Token
+         * doesn't represent an object.
+         * @param field The field to check.
+         * @return Whether the field exists as an object in the object.
+         */
+        public boolean hasObject(String field)
+        {
+            this.checkType(Type.OBJECT);
+            Token token = this.obj.get(field);
+            return token != null && token.type == Type.OBJECT;
+        }
+
+        /**
          * Treats the Token as an object, and adds the specified Token to the object. Throws an exception if the Token
          * doesn't represent an object.
          *
