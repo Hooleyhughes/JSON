@@ -423,6 +423,8 @@ public final class JSON
 
         private int order;
 
+        private String name;
+
         /**
          * Creates a null Token.
          */
@@ -430,6 +432,7 @@ public final class JSON
         {
             this.set();
             this.order = 0;
+            this.name = null;
         }
 
         /**
@@ -441,6 +444,7 @@ public final class JSON
         {
             this.set(num);
             this.order = 0;
+            this.name = null;
         }
 
         /**
@@ -452,6 +456,7 @@ public final class JSON
         {
             this.set(str);
             this.order = 0;
+            this.name = null;
         }
 
         /**
@@ -463,6 +468,7 @@ public final class JSON
         {
             this.set(bol);
             this.order = 0;
+            this.name = null;
         }
 
         /**
@@ -473,6 +479,7 @@ public final class JSON
         {
             this.set(arr);
             this.order = 0;
+            this.name = null;
         }
 
         /**
@@ -483,6 +490,7 @@ public final class JSON
         {
             this.set(obj);
             this.order = 0;
+            this.name = null;
         }
 
         /**
@@ -497,6 +505,7 @@ public final class JSON
         {
             this.set(object);
             this.order = 0;
+            this.name = null;
         }
 
         /**
@@ -1516,6 +1525,22 @@ public final class JSON
         }
 
         /**
+         * Treats the Token as an object, and adds the specified Token to the object. The name of the field representing
+         * the Token is provided by the Token's name attribute. Throws an exception if the Token doesn't represent an
+         * object, or if the Token's name is null.
+         * @param token The token to be added.
+         */
+        public void put(Token token)
+        {
+            String name = token.name;
+
+            if(name == null)
+                throw new RuntimeException("Cannot put a token into an object without a name for the field");
+
+            this.put(name, token);
+        }
+
+        /**
          * Treats the Token as an object, and adds the specified Token to the object. Throws an exception if the Token
          * doesn't represent an object.
          *
@@ -1529,7 +1554,10 @@ public final class JSON
             if(this.obj.containsKey(field))
                 this.obj.get(field).set(token);
             else
+            {
                 this.obj.put(field, token);
+                this.obj.get(field).name = field;
+            }
         }
 
         /**
@@ -1546,7 +1574,10 @@ public final class JSON
             if(this.obj.containsKey(field))
                 this.obj.get(field).set(number);
             else
+            {
                 this.obj.put(field, new Token(number));
+                this.obj.get(field).name = field;
+            }
         }
 
         /**
@@ -1563,7 +1594,10 @@ public final class JSON
             if(this.obj.containsKey(field))
                 this.obj.get(field).set(string);
             else
+            {
                 this.obj.put(field, new Token(string));
+                this.obj.get(field).name = field;
+            }
         }
 
         /**
@@ -1580,7 +1614,10 @@ public final class JSON
             if(this.obj.containsKey(field))
                 this.obj.get(field).set(bool);
             else
+            {
                 this.obj.put(field, new Token(bool));
+                this.obj.get(field).name = field;
+            }
         }
 
         /**
@@ -1597,7 +1634,10 @@ public final class JSON
             if(this.obj.containsKey(field))
                 this.obj.get(field).set(array);
             else
+            {
                 this.obj.put(field, new Token(array));
+                this.obj.get(field).name = field;
+            }
         }
 
         /**
@@ -1614,7 +1654,10 @@ public final class JSON
             if(this.obj.containsKey(field))
                 this.obj.get(field).set(object);
             else
+            {
                 this.obj.put(field, new Token(object));
+                this.obj.get(field).name = field;
+            }
         }
 
         /**
@@ -1631,7 +1674,10 @@ public final class JSON
             if(this.obj.containsKey(field))
                 this.obj.get(field).set(object);
             else
+            {
                 this.obj.put(field, new Token(object));
+                this.obj.get(field).name = field;
+            }
         }
 
         /**
@@ -2027,6 +2073,16 @@ public final class JSON
         }
 
         /**
+         * Gets the name of the Token. The name is the field the Token is found under in the JSON. This only applies if
+         * the Token belongs to an object, otherwise if the Token belongs to an array, the name is null.
+         * @return The name of the field this Token represents.
+         */
+        public String getName()
+        {
+            return this.name;
+        }
+
+        /**
          * Creates a String representation of the Token, which includes the type of the Token as well as the value.
          * @return The String representation of the Token.
          */
@@ -2075,6 +2131,7 @@ public final class JSON
             }
             else
             {
+                token.name = this.currentKey;
                 this.fields.put(this.currentKey, token);
                 this.currentKey = null;
             }
@@ -2098,5 +2155,30 @@ public final class JSON
         {
             super(message);
         }
+    }
+
+    /**
+     * An interface to allow the JSON parser to be more interoperable with other classes. Any class that implements the
+     * Serial interface can be converted to a Token, and read from a Token, allowing for the class to be treated and
+     * operated on like any other Token.
+     */
+    public interface Serial
+    {
+        /**
+         * This method should be implemented in such a way that the underlying class can be represented as a JSON Token.
+         * When converting the class to a Token, keep in mind that other methods are free to mutate the Token as they
+         * see fit, and any changes might affect the representation of the class.
+         * @return The Token representing this class.
+         */
+        public Token toToken();
+
+        /**
+         * This method should be implemented in such a way that the underlying class is updated to represent the JSON
+         * Token passed in. Due to the nature of JSON Tokens, the Token cannot be guaranteed to represent this class,
+         * and that case must be handled by this implementation, or at the very least, kept in mind when implementing
+         * this method.
+         * @param token The Token to update this class to represent.
+         */
+        public void fromToken(Token token);
     }
 }
