@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+@SuppressWarnings("unused")
 public final class JSON
 {
     /**
@@ -88,22 +89,17 @@ public final class JSON
 
         for(T t : array)
         {
-            if(t instanceof Number num)
-                tokens.add(new Token(num));
-            else if(t instanceof String str)
-                tokens.add(new Token(str));
-            else if(t instanceof Boolean bol)
-                tokens.add(new Token(bol));
-            else if(t == null)
-                tokens.add(new Token());
-            else if(t instanceof List<?> arr)
-                tokens.add(new Token(convertArray(arr)));
-            else if(t instanceof Map<?, ?> obj)
-                tokens.add(new Token(obj));
-            else if(t instanceof Token token)
-                tokens.add(token);
-            else
-                tokens.add(new Token(t.toString()));
+            switch(t)
+            {
+                case Number num -> tokens.add(new Token(num));
+                case String str -> tokens.add(new Token(str));
+                case Boolean bol -> tokens.add(new Token(bol));
+                case null -> tokens.add(new Token());
+                case List<?> arr -> tokens.add(new Token(convertArray(arr)));
+                case Map<?, ?> obj -> tokens.add(new Token(obj));
+                case Token token -> tokens.add(token);
+                default -> tokens.add(new Token(t.toString()));
+            }
         }
 
         return tokens;
@@ -125,22 +121,17 @@ public final class JSON
             String key = entry.getKey().toString();
             V value = entry.getValue();
 
-            if(value instanceof Number num)
-                tokens.put(key, new Token(num));
-            else if(value instanceof String str)
-                tokens.put(key, new Token(str));
-            else if(value instanceof Boolean bol)
-                tokens.put(key, new Token(bol));
-            else if(value == null)
-                tokens.put(key, new Token());
-            else if(value instanceof List<?> arr)
-                tokens.put(key, new Token(convertArray(arr)));
-            else if(value instanceof Map<?, ?> obj)
-                tokens.put(key, new Token(obj));
-            else if(value instanceof Token token)
-                tokens.put(key, token);
-            else
-                tokens.put(key, new Token(value.toString()));
+            switch(value)
+            {
+                case Number num -> tokens.put(key, new Token(num));
+                case String str -> tokens.put(key, new Token(str));
+                case Boolean bol -> tokens.put(key, new Token(bol));
+                case null -> tokens.put(key, new Token());
+                case List<?> arr -> tokens.put(key, new Token(convertArray(arr)));
+                case Map<?, ?> obj -> tokens.put(key, new Token(obj));
+                case Token token -> tokens.put(key, token);
+                default -> tokens.put(key, new Token(value.toString()));
+            }
         }
 
         return tokens;
@@ -358,39 +349,57 @@ public final class JSON
             {
                 case NULL -> "null";
                 case NUMBER -> token.num.toString();
-                case STRING -> "\"" + token.str + "\"";
+                case STRING -> STR."\"\{token.str}\"";
                 case BOOLEAN -> token.bol.toString();
-                case ARRAY -> formatArray(token.arr, indent + this.space);
-                case OBJECT -> formatObject(token.obj, indent + this.space);
+                case ARRAY -> formatArray(token.arr, indent + this.space, token.wrap);
+                case OBJECT -> formatObject(token.obj, indent + this.space, token.wrap);
             };
         }
 
-        private String formatArray(List<Token> array, String indent)
+        private String formatArray(List<Token> array, String indent, boolean wrap)
         {
             if(array.isEmpty())
                 return "[]";
 
-            StringBuilder total = new StringBuilder("[\n");
+            StringBuilder total = new StringBuilder(wrap ? "[\n" : "[");
 
-            for(Token string : array)
-                total.append(indent).append(this.toString(string, indent)).append(",\n");
-            total.deleteCharAt(total.length() - 2).append(indent).delete(total.length() - this.space.length(), total.length()).append("]");
+            if(wrap)
+            {
+                for(Token string : array)
+                    total.append(indent).append(this.toString(string, indent)).append(",\n");
+                total.deleteCharAt(total.length() - 2).append(indent).delete(total.length() - this.space.length(), total.length()).append("]");
+            }
+            else
+            {
+                for(Token string : array)
+                    total.append(this.toString(string, indent)).append(", ");
+                total.delete(total.length() - 2, total.length()).append("]");
+            }
 
             return total.toString();
         }
 
-        private String formatObject(Map<String, Token> object, String indent)
+        private String formatObject(Map<String, Token> object, String indent, boolean wrap)
         {
             if(object.isEmpty())
                 return "{}";
 
-            StringBuilder total = new StringBuilder("{\n");
+            StringBuilder total = new StringBuilder(wrap ? "{\n" : "{");
 
             List<Map.Entry<String, Token>> sorted = object.entrySet().stream().sorted(Comparator.comparingInt(entry -> entry.getValue().order)).toList();
 
-            for(Map.Entry<String, Token> field : sorted)
-                total.append(indent).append("\"").append(field.getKey()).append("\": ").append(this.toString(field.getValue(), indent)).append(",\n");
-            total.deleteCharAt(total.length() - 2).append(indent).delete(total.length() - this.space.length(), total.length()).append("}");
+            if(wrap)
+            {
+                for(Map.Entry<String, Token> field : sorted)
+                    total.append(indent).append("\"").append(field.getKey()).append("\": ").append(this.toString(field.getValue(), indent)).append(",\n");
+                total.deleteCharAt(total.length() - 2).append(indent).delete(total.length() - this.space.length(), total.length()).append("}");
+            }
+            else
+            {
+                for(Map.Entry<String, Token> field : sorted)
+                    total.append("\"").append(field.getKey()).append("\": ").append(this.toString(field.getValue(), indent)).append(", ");
+                total.delete(total.length() - 2, total.length()).append("}");
+            }
 
             return total.toString();
         }
@@ -422,6 +431,7 @@ public final class JSON
         private Type type;
 
         private int order;
+        private boolean wrap;
 
         private String name;
 
@@ -431,7 +441,10 @@ public final class JSON
         public Token()
         {
             this.set();
+
             this.order = 0;
+            this.wrap = true;
+
             this.name = null;
         }
 
@@ -443,7 +456,10 @@ public final class JSON
         public Token(Number num)
         {
             this.set(num);
+
             this.order = 0;
+            this.wrap = true;
+
             this.name = null;
         }
 
@@ -455,7 +471,10 @@ public final class JSON
         public Token(String str)
         {
             this.set(str);
+
             this.order = 0;
+            this.wrap = true;
+
             this.name = null;
         }
 
@@ -467,7 +486,10 @@ public final class JSON
         public Token(Boolean bol)
         {
             this.set(bol);
+
             this.order = 0;
+            this.wrap = true;
+
             this.name = null;
         }
 
@@ -478,7 +500,10 @@ public final class JSON
         public Token(List<?> arr)
         {
             this.set(arr);
+
             this.order = 0;
+            this.wrap = false;
+
             this.name = null;
         }
 
@@ -489,7 +514,10 @@ public final class JSON
         public Token(Map<?, ?> obj)
         {
             this.set(obj);
+
             this.order = 0;
+            this.wrap = true;
+
             this.name = null;
         }
 
@@ -504,7 +532,10 @@ public final class JSON
         public Token(Object object)
         {
             this.set(object);
+
             this.order = 0;
+            this.wrap = true;
+
             this.name = null;
         }
 
@@ -1962,22 +1993,17 @@ public final class JSON
          */
         public void set(Object object)
         {
-            if(object instanceof Number x)
-                this.set(x);
-            else if(object instanceof String x)
-                this.set(x);
-            else if(object instanceof Boolean x)
-                this.set(x);
-            else if(object == null)
-                this.set();
-            else if(object instanceof List<?> x)
-                this.set(x);
-            else if(object instanceof Map<?, ?> x)
-                this.set(x);
-            else if(object instanceof Token x)
-                this.set(x.get());
-            else
-                this.set(object.toString());
+            switch(object)
+            {
+                case Number x -> this.set(x);
+                case String x -> this.set(x);
+                case Boolean x -> this.set(x);
+                case null -> this.set();
+                case List<?> x -> this.set(x);
+                case Map<?, ?> x -> this.set(x);
+                case Token x -> this.set(x.get());
+                default -> this.set(object.toString());
+            }
         }
 
         /**
@@ -1993,7 +2019,7 @@ public final class JSON
             if(this.type == Type.OBJECT)
                 return this.obj.size();
 
-            throw new WrongDataType("Expected " + Type.ARRAY + " or " + Type.OBJECT + ", got " + this.type);
+            throw new WrongDataType(STR."Expected \{Type.ARRAY} or \{Type.OBJECT}, got \{this.type}");
         }
 
         /**
@@ -2009,7 +2035,7 @@ public final class JSON
             if(this.type == Type.OBJECT)
                 return this.obj.isEmpty();
 
-            throw new WrongDataType("Expected " + Type.ARRAY + " or " + Type.OBJECT + ", got " + this.type);
+            throw new WrongDataType(STR."Expected \{Type.ARRAY} or \{Type.OBJECT}, got \{this.type}");
         }
 
         /**
@@ -2073,6 +2099,35 @@ public final class JSON
         }
 
         /**
+         * Gets whether this Token should wrap when being compiled. This only applies to either arrays or objects, as
+         * they can have many fields. If wrapping is set to true, then each field is given its own line in the compiler,
+         * and when wrapping is set to false, the fields are placed on the same line. This is purely for the readability
+         * of the JSON, and doesn't affect the operation of the JSON.
+         * @return Whether the Token should wrap fields on multiple lines.
+         */
+        public boolean getWrap()
+        {
+            return this.wrap;
+        }
+
+        /**
+         * Sets whether this Token should wrap when being compiled. This only applies to either arrays or objects, as
+         * they can have many fields. Setting wrapping on a Token that doesn't represent an array or an object will not
+         * cause an error, as it shouldn't and doesn't affect them. By setting wrapping to true, all fields within the
+         * array or object will be delimited by new lines, placing each field on a new line. When setting wrapping to
+         * false, all fields will be placed on the same line. This is purely for the readability of the JSON, as it has
+         * no effect on the actual structure of it, only how it looks when read by a human; all new lines are treated as
+         * whitespace, and are ignored when parsing the JSON. It is also suggested to recursively set wrapping to the
+         * same value, in order to maintain the look for nested Tokens, as this is not taken care of in the compiler for
+         * any cases where the user doesn't want a recursive wrapping.
+         * @param wrap Whether the Token should wrap fields on multiple lines.
+         */
+        public void setWrap(boolean wrap)
+        {
+            this.wrap = wrap;
+        }
+
+        /**
          * Gets the name of the Token. The name is the field the Token is found under in the JSON. This only applies if
          * the Token belongs to an object, otherwise if the Token belongs to an array, the name is null.
          * @return The name of the field this Token represents.
@@ -2089,7 +2144,7 @@ public final class JSON
         @Override
         public String toString()
         {
-            return (this.type == null ? "Syntax" : this.type) + ": " + this.get();
+            return STR."\{this.type == null ? "Syntax" : this.type}: \{this.get()}";
         }
 
         /**
@@ -2105,7 +2160,7 @@ public final class JSON
         private void checkType(Type check)
         {
             if(this.type != check)
-                throw new WrongDataType("Expected " + check + ", got " + this.type);
+                throw new WrongDataType(STR."Expected \{check}, got \{this.type}");
         }
     }
 
@@ -2127,7 +2182,7 @@ public final class JSON
                 if(token.getType() == Token.Type.STRING)
                     this.currentKey = token.getString();
                 else
-                    throw new RuntimeException("Expected object key, got: " + token);
+                    throw new RuntimeException(STR."Expected object key, got: \{token}");
             }
             else
             {
