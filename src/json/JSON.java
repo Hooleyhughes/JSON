@@ -349,7 +349,7 @@ public final class JSON
             {
                 case NULL -> "null";
                 case NUMBER -> token.num.toString();
-                case STRING -> STR."\"\{token.str}\"";
+                case STRING -> "\"" + token.str + "\"";
                 case BOOLEAN -> token.bol.toString();
                 case ARRAY -> formatArray(token.arr, indent + this.space, token.wrap);
                 case OBJECT -> formatObject(token.obj, indent + this.space, token.wrap);
@@ -2019,7 +2019,7 @@ public final class JSON
             if(this.type == Type.OBJECT)
                 return this.obj.size();
 
-            throw new WrongDataType(STR."Expected \{Type.ARRAY} or \{Type.OBJECT}, got \{this.type}");
+            throw new WrongDataType("Expected " + Type.ARRAY + " or " + Type.OBJECT + ", got " + this.type);
         }
 
         /**
@@ -2035,7 +2035,7 @@ public final class JSON
             if(this.type == Type.OBJECT)
                 return this.obj.isEmpty();
 
-            throw new WrongDataType(STR."Expected \{Type.ARRAY} or \{Type.OBJECT}, got \{this.type}");
+            throw new WrongDataType("Expected " + Type.ARRAY + " or " + Type.OBJECT + ", got " + this.type);
         }
 
         /**
@@ -2144,7 +2144,7 @@ public final class JSON
         @Override
         public String toString()
         {
-            return STR."\{this.type == null ? "Syntax" : this.type}: \{this.get()}";
+            return (this.type == null ? "Syntax" : this.type) + ": " + this.get();
         }
 
         /**
@@ -2160,7 +2160,7 @@ public final class JSON
         private void checkType(Type check)
         {
             if(this.type != check)
-                throw new WrongDataType(STR."Expected \{check}, got \{this.type}");
+                throw new WrongDataType("Expected " + check + ", got " + this.type);
         }
     }
 
@@ -2182,7 +2182,7 @@ public final class JSON
                 if(token.getType() == Token.Type.STRING)
                     this.currentKey = token.getString();
                 else
-                    throw new RuntimeException(STR."Expected object key, got: \{token}");
+                    throw new RuntimeException("Expected object key, got: " + token);
             }
             else
             {
