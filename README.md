@@ -1,17 +1,46 @@
 # JSON Parser
 
-This project is a simple JSON parser, designed to read, write and modify JSON files, in Java.
+A small library written in Java for parsing, editing and writing JSON documents. It exposes a simple `Token` tree that mirrors the JSON structure and provides helpers for converting standard Java collections.
 
-## JSON Structure
+## Features
+- Parse JSON strings or files into a tree of `Token` objects
+- Write `Token` trees back to JSON text
+- Utility methods for converting Lists and Maps
+- Optional `Serial` interface for mapping custom classes to tokens
 
-JSON objects can contain 8 data types:
-- Number
-- String
-- Boolean
-- Null
-- Array
-- Object
+## Getting Started
+The source consists of a single `JSON.java` file. Compile it with any recent JDK:
 
-When parsed, the JSON's data is represented as pre-existing Java objects to increase versitility of the parser. JSON Numbers are represented using Java's `java.lang.Number` class. This is a wrapper class that can autobox any form of primitive number in Java (not `char` or `boolean`), however also allows for the value to be `null`. One draw back of using the `Number` class is then converting it back to a primitive data type. JSON Strings are represented using Java's built in `java.lang.String` object. These are self explanatory enough. JSON Booleans are represented with Java's `java.lang.Boolean` class. This class is also a wrapper class for Java's primitive `boolean` data type, and is used in place of the primitive data type to also represent the value as `null`. JSON Null objects aren't representing by anything specific in Java, as Java allows for `null` objects, therefore any JSON fields with a null value are also `null` in Java. JSON Arrays are a little more complicated, as they are represented using Java's `java.util.List<E>` class. Since that Java class requires a type to use, a custon `Token` class is used. JSON Objects are represented as Java's `java.util.Map<K, V>`, with `String` as keys and `Token` as values.
+```bash
+javac -d out src/json/JSON.java
+```
 
-Each field within the JSON object is stored in the Java program as a custom `Token` class. These classes represent any of the values the field can have by having instance fields for each data type except `null`. When getting what data type the token represents, it will throw a runtime exception if the wrong type is called. Each `Token` also has an enum of which data type it is to be able to read without error.
+### Parsing JSON
+```java
+String text = "{ \"name\": \"Codex\", \"values\": [1, 2, 3] }";
+JSON.Token root = JSON.parse(text);
+```
+
+### Reading/Writing Files
+```java
+Path file = Path.of("data.json");
+JSON.Token root = JSON.read(file);      // read from disk
+root.put("active", new JSON.Token(true));
+JSON.write(root, file);                 // write back to disk
+```
+
+### Working with Tokens
+Tokens represent the various JSON types. They provide typed getters and setters as well as convenience methods to iterate over arrays and objects.
+
+```java
+int firstNumber = root.getToken("values").get(0).getInteger();
+root.put("message", new JSON.Token("Hello"));
+```
+
+## Future Improvements
+Two experimental pieces are included but not fully implemented:
+
+* **Scheme** – a class intended for validating a `Token` against a defined scheme (similar to JSON schema). The skeleton exists but validation logic is incomplete.
+* **Serial** – an interface allowing application classes to convert themselves to and from tokens. Implementations can supply `toToken()` and `fromToken()` to integrate with the parser.
+
+Contributions are welcome to flesh out these areas.
