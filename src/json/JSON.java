@@ -1,5 +1,7 @@
 package json;
 
+import json.JSON.Token.Type;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -246,10 +248,13 @@ public final class JSON
             this.index++;
             StringBuilder string = new StringBuilder();
 
+            boolean escaping = false;
             currentCharacter = this.contents.charAt(this.index);
-            while(currentCharacter != '"' || (!string.isEmpty() && string.charAt(string.length() - 1) == '\\'))
+//            while(currentCharacter != '"' || (!string.isEmpty() && string.charAt(string.length() - 1) == '\\'))
+            while(currentCharacter != '"' || escaping)
             {
                 string.append(currentCharacter);
+                escaping = !escaping && currentCharacter == '\\';
                 this.index++;
                 currentCharacter = this.contents.charAt(this.index);
             }
@@ -2144,6 +2149,9 @@ public final class JSON
         @Override
         public String toString()
         {
+            if(Boolean.parseBoolean(System.getProperty("json.compileToString", "true")))
+                return this.compile();
+
             return (this.type == null ? "Syntax" : this.type) + ": " + this.get();
         }
 
@@ -2179,7 +2187,7 @@ public final class JSON
         {
             if(this.currentKey == null)
             {
-                if(token.getType() == Token.Type.STRING)
+                if(token.getType() == Type.STRING)
                     this.currentKey = token.getString();
                 else
                     throw new RuntimeException("Expected object key, got: " + token);
@@ -2235,5 +2243,79 @@ public final class JSON
          * @param token The Token to update this class to represent.
          */
         public void fromToken(Token token);
+    }
+
+    /**
+     * The Scheme class is designed to provide a way to convert a Token into a scheme. The scheme can be edited using
+     * various methods, and populated into a Token.
+     */
+    public static class Scheme // TODO: Flesh this out. Ensure users can create a Scheme without a Token, and edit.
+    {
+        private static final Token NUMBER = parse("{\"type\": \"number\"}");
+        private static final Token STRING = parse("{\"type\": \"string\"}");
+        private static final Token BOOLEAN = parse("{\"type\": \"boolean\"}");
+
+        /**
+         * Converts a Token into a Scheme that represents the Token.
+         * @param token Token to convert into a Scheme
+         * @return Scheme that represents the Token
+         */
+        public static Scheme convertToScheme(Token token)
+        {
+            return new Scheme(convert(token));
+        }
+
+        private static Token convert(Token token)
+        {
+            return switch(token.getType())
+            {
+                case NUMBER -> NUMBER;
+                case STRING -> STRING;
+                case BOOLEAN -> BOOLEAN;
+                case ARRAY -> convertArray(token);
+                case OBJECT -> convertObject(token);
+
+                case NULL -> throw new IllegalArgumentException("Cannot include NULL in a scheme");
+            };
+        }
+
+        private static Token convertArray(Token token)
+        {
+            List<Token> items = new ArrayList<>();
+            token.forEach(item -> items.add(convert(item)));
+
+            Token array = parse("{\"type\": \"array\"}");
+            array.put("items", items);
+
+            return array;
+        }
+
+        private static Token convertObject(Token token)
+        {
+            Map<String, Token> properties = new HashMap<>();
+            token.forEach((name, property) -> properties.put(name, convert(property)));
+
+            Token object = parse("{\"type\": \"object\"}");
+            object.put("properties", properties);
+
+            return object;
+        }
+
+        private final Token scheme;
+
+        private Scheme(Token scheme)
+        {
+            this.scheme = scheme;
+        }
+
+        /**
+         * Validates a Token against the Scheme.
+         * @param token Token to validate
+         * @return If the Token fits the Scheme
+         */
+        public boolean validate(Token token)
+        {
+            return true; // TODO: This
+        }
     }
 }
