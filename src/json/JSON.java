@@ -156,7 +156,13 @@ public final class JSON
 
         public Token parse() throws ParseException
         {
-            return this.getNext();
+            Token token = this.getNext();
+            while(token == null && this.index < this.contents.length())
+                token = this.getNext();
+
+            return token;
+
+//            return this.getNext();
         }
 
         public Token getNext() throws ParseException
@@ -223,13 +229,23 @@ public final class JSON
         private Token attemptNumber() throws ParseException
         {
             StringBuilder numberString = new StringBuilder();
-            char currentCharacter = this.contents.charAt(this.index);
+//            char currentCharacter = this.contents.charAt(this.index);
+//
+//            while(NUMBER_SET.contains(currentCharacter))
+//            {
+//                numberString.append(currentCharacter);
+//                this.index++;
+//                currentCharacter = this.contents.charAt(this.index);
+//            }
 
-            while(NUMBER_SET.contains(currentCharacter))
+            while(this.index < this.contents.length())
             {
+                char currentCharacter = this.contents.charAt(this.index);
+                if(!NUMBER_SET.contains(currentCharacter))
+                    break;
+
                 numberString.append(currentCharacter);
                 this.index++;
-                currentCharacter = this.contents.charAt(this.index);
             }
 
             if(numberString.isEmpty())
