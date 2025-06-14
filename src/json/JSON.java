@@ -685,6 +685,341 @@ public final class JSON
         }
 
         /**
+         * Gets the List this Token represents with each element represented as a Number. Throws an exception if the
+         * Token doesn't represent a List, or an element in the List doesn't represent a Number.
+         *
+         * @return The List of Numbers the Token represents.
+         */
+        public List<Number> getNumberArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            List<Number> list = new ArrayList<>();
+            for(Token token : this.arr)
+                list.add(token.getNumber());
+            return list;
+        }
+
+        /**
+         * Gets the List this Token represents with each element represented as a Byte. Throws an exception if the
+         * Token doesn't represent a List, or an element in the List doesn't represent a Byte.
+         *
+         * @return The List of Bytes the Token represents.
+         */
+        public List<Byte> getByteArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            List<Byte> list = new ArrayList<>();
+            for(Token token : this.arr)
+                list.add(token.getByte());
+            return list;
+        }
+
+        /**
+         * Gets the List this Token represents with each element represented as a Short. Throws an exception if the
+         * Token doesn't represent a List, or an element in the List doesn't represent a Short.
+         *
+         * @return The List of Shorts the Token represents.
+         */
+        public List<Short> getShortArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            List<Short> list = new ArrayList<>();
+            for(Token token : this.arr)
+                list.add(token.getShort());
+            return list;
+        }
+
+        /**
+         * Gets the List this Token represents with each element represented as an Integer. Throws an exception if the
+         * Token doesn't represent a List, or an element in the List doesn't represent an Integer.
+         *
+         * @return The List of Integers the Token represents.
+         */
+        public List<Integer> getIntegerArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            List<Integer> list = new ArrayList<>();
+            for(Token token : this.arr)
+                list.add(token.getInteger());
+            return list;
+        }
+
+        /**
+         * Gets the List this Token represents with each element represented as a Long. Throws an exception if the
+         * Token doesn't represent a List, or an element in the List doesn't represent a Long.
+         *
+         * @return The List of Longs the Token represents.
+         */
+        public List<Long> getLongArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            List<Long> list = new ArrayList<>();
+            for(Token token : this.arr)
+                list.add(token.getLong());
+            return list;
+        }
+
+        /**
+         * Gets the List this Token represents with each element represented as a Float. Throws an exception if the
+         * Token doesn't represent a List, or an element in the List doesn't represent a Float.
+         *
+         * @return The List of Floats the Token represents.
+         */
+        public List<Float> getFloatArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            List<Float> list = new ArrayList<>();
+            for(Token token : this.arr)
+                list.add(token.getFloat());
+            return list;
+        }
+
+        /**
+         * Gets the List this Token represents with each element represented as a Double. Throws an exception if the
+         * Token doesn't represent a List, or an element in the List doesn't represent a Double.
+         *
+         * @return The List of Doubles the Token represents.
+         */
+        public List<Double> getDoubleArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            List<Double> list = new ArrayList<>();
+            for(Token token : this.arr)
+                list.add(token.getDouble());
+            return list;
+        }
+
+        /**
+         * Gets the List this Token represents with each element represented as a String. Throws an exception if the
+         * Token doesn't represent a List, or an element in the List doesn't represent a String.
+         *
+         * @return The List of Strings the Token represents.
+         */
+        public List<String> getStringArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            List<String> list = new ArrayList<>();
+            for(Token token : this.arr)
+                list.add(token.getString());
+            return list;
+        }
+
+        /**
+         * Gets the List this Token represents with each element represented as a Boolean. Throws an exception if the
+         * Token doesn't represent a List, or an element in the List doesn't represent a Boolean.
+         *
+         * @return The List of Booleans the Token represents.
+         */
+        public List<Boolean> getBooleanArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            List<Boolean> list = new ArrayList<>();
+            for(Token token : this.arr)
+                list.add(token.getBoolean());
+            return list;
+        }
+
+        /**
+         * Gets the List this Token represents with each element represented as a List. Throws an exception if the
+         * Token doesn't represent a List, or an element in the List doesn't represent a List.
+         *
+         * @return The List of Lists the Token represents.
+         */
+        public List<List<Token>> getArrayArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            List<List<Token>> list = new ArrayList<>();
+            for(Token token : this.arr)
+                list.add(token.getArray());
+            return list;
+        }
+
+        /**
+         * Gets the List this Token represents as an array of Tokens. Throws an exception if the Token doesn't represent
+         * a List.
+         *
+         * @return An array of Tokens this Token represents.
+         */
+        public Token[] toArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            Token[] array = new Token[this.arr.size()];
+            for(int i = 0; i < this.arr.size(); i++)
+                array[i] = this.getToken(i);
+            return array;
+        }
+
+        /**
+         * Gets the List this Token represents as an array of Numbers. Throws an exception if the Token doesn't
+         * represent a List or an element in the List doesn't represent a Number.
+         *
+         * @return An array of Numbers this Token represents.
+         */
+        public Number[] toNumberArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            Number[] array = new Number[this.arr.size()];
+            for(int i = 0; i < this.arr.size(); i++)
+                array[i] = this.getNumber(i);
+            return array;
+        }
+
+        /**
+         * Gets the List this Token represents as an array of bytes. Throws an exception if the Token doesn't
+         * represent a List or an element in the List doesn't represent a byte.
+         *
+         * @return An array of bytes this Token represents.
+         */
+        public byte[] toByteArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            byte[] array = new byte[this.arr.size()];
+            for(int i = 0; i < this.arr.size(); i++)
+                array[i] = this.getByte(i);
+            return array;
+        }
+
+        /**
+         * Gets the List this Token represents as an array of shorts. Throws an exception if the Token doesn't
+         * represent a List or an element in the List doesn't represent a short.
+         *
+         * @return An array of shorts this Token represents.
+         */
+        public short[] toShortArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            short[] array = new short[this.arr.size()];
+            for(int i = 0; i < this.arr.size(); i++)
+                array[i] = this.getShort(i);
+            return array;
+        }
+
+        /**
+         * Gets the List this Token represents as an array of integers. Throws an exception if the Token doesn't
+         * represent a List or an element in the List doesn't represent an integer.
+         *
+         * @return An array of integers this Token represents.
+         */
+        public int[] toIntegerArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            int[] array = new int[this.arr.size()];
+            for(int i = 0; i < this.arr.size(); i++)
+                array[i] = this.getInteger(i);
+            return array;
+        }
+
+        /**
+         * Gets the List this Token represents as an array of longs. Throws an exception if the Token doesn't
+         * represent a List or an element in the List doesn't represent a long.
+         *
+         * @return An array of longs this Token represents.
+         */
+        public long[] toLongArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            long[] array = new long[this.arr.size()];
+            for(int i = 0; i < this.arr.size(); i++)
+                array[i] = this.getLong(i);
+            return array;
+        }
+
+        /**
+         * Gets the List this Token represents as an array of floats. Throws an exception if the Token doesn't
+         * represent a List or an element in the List doesn't represent a float.
+         *
+         * @return An array of floats this Token represents.
+         */
+        public float[] toFloatArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            float[] array = new float[this.arr.size()];
+            for(int i = 0; i < this.arr.size(); i++)
+                array[i] = this.getFloat(i);
+            return array;
+        }
+
+        /**
+         * Gets the List this Token represents as an array of doubles. Throws an exception if the Token doesn't
+         * represent a List or an element in the List doesn't represent a double.
+         *
+         * @return An array of doubles this Token represents.
+         */
+        public double[] toDoubleArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            double[] array = new double[this.arr.size()];
+            for(int i = 0; i < this.arr.size(); i++)
+                array[i] = this.getDouble(i);
+            return array;
+        }
+
+        /**
+         * Gets the List this Token represents as an array of Strings. Throws an exception if the Token doesn't
+         * represent a List or an element in the List doesn't represent a String.
+         *
+         * @return An array of Strings this Token represents.
+         */
+        public String[] toStringArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            String[] array = new String[this.arr.size()];
+            for(int i = 0; i < this.arr.size(); i++)
+                array[i] = this.getString(i);
+            return array;
+        }
+
+        /**
+         * Gets the List this Token represents as an array of booleans. Throws an exception if the Token doesn't
+         * represent a List or an element in the List doesn't represent a boolean.
+         *
+         * @return An array of booleans this Token represents.
+         */
+        public boolean[] toBooleanArray()
+        {
+            this.checkType(Type.ARRAY);
+
+            boolean[] array = new boolean[this.arr.size()];
+            for(int i = 0; i < this.arr.size(); i++)
+                array[i] = this.getBoolean(i);
+            return array;
+        }
+
+        /**
+         * Gets the List this Token represents as an array of Lists. Throws an exception if the Token doesn't
+         * represent a List or an element in the List doesn't represent a List.
+         *
+         * @return An array of Lists this Token represents.
+         */
+        public List<Token>[] toArrayArray()
+        {
+            this.checkType(Type.ARRAY);
+            List<Token>[] array = new List[this.arr.size()];
+            for(int i = 0; i < this.arr.size(); i++)
+                array[i] = this.getArray(i);
+            return array;
+        }
+
+        /**
          * Treats the Token as an array, and gets the element at the specified index as a Token. Throws an exception if
          * the Token doesn't represent an array.
          *
@@ -1105,7 +1440,7 @@ public final class JSON
         public void set(int index, List<?> array)
         {
             this.checkType(Type.ARRAY);
-            this.arr.get(index).set(arr);
+            this.arr.get(index).set(array);
         }
 
         /**
