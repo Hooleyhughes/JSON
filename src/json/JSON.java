@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -118,7 +119,7 @@ public final class JSON
     {
         Map<String, Token> tokens = new HashMap<>();
 
-        for(Map.Entry<K, V> entry : map.entrySet())
+        for(Entry<K, V> entry : map.entrySet())
         {
             String key = entry.getKey().toString();
             V value = entry.getValue();
@@ -372,13 +373,15 @@ public final class JSON
                 case NUMBER -> token.num.toString();
                 case STRING -> "\"" + token.str + "\"";
                 case BOOLEAN -> token.bol.toString();
-                case ARRAY -> formatArray(token.arr, indent + this.space, token.wrap);
-                case OBJECT -> formatObject(token.obj, indent + this.space, token.wrap);
+                case ARRAY -> formatArray(token, indent + this.space, token.wrap);
+                case OBJECT -> formatObject(token, indent + this.space, token.wrap);
             };
         }
 
-        private String formatArray(List<Token> array, String indent, boolean wrap)
+        private String formatArray(Token token, String indent, boolean wrap)
         {
+            List<Token> array = token.arr;
+
             if(array.isEmpty())
                 return "[]";
 
@@ -400,24 +403,33 @@ public final class JSON
             return total.toString();
         }
 
-        private String formatObject(Map<String, Token> object, String indent, boolean wrap)
+        private String formatObject(Token token, String indent, boolean wrap)
         {
+            Map<String, Token> object = token.obj;
+
             if(object.isEmpty())
                 return "{}";
 
             StringBuilder total = new StringBuilder(wrap ? "{\n" : "{");
 
-            List<Map.Entry<String, Token>> sorted = object.entrySet().stream().sorted(Comparator.comparingInt(entry -> entry.getValue().order)).toList();
+            Comparator<Entry<String, Token>> comparator;
+
+            if(token.comparator == null)
+                comparator = Comparator.comparingInt(entry -> entry.getValue().order);
+            else
+                comparator = (a, b) -> token.comparator.compare(a.getValue(), b.getValue());
+
+            List<Entry<String, Token>> sorted = object.entrySet().stream().sorted(comparator).toList();
 
             if(wrap)
             {
-                for(Map.Entry<String, Token> field : sorted)
+                for(Entry<String, Token> field : sorted)
                     total.append(indent).append("\"").append(field.getKey()).append("\": ").append(this.toString(field.getValue(), indent)).append(",\n");
                 total.deleteCharAt(total.length() - 2).append(indent).delete(total.length() - this.space.length(), total.length()).append("}");
             }
             else
             {
-                for(Map.Entry<String, Token> field : sorted)
+                for(Entry<String, Token> field : sorted)
                     total.append("\"").append(field.getKey()).append("\": ").append(this.toString(field.getValue(), indent)).append(", ");
                 total.delete(total.length() - 2, total.length()).append("}");
             }
@@ -453,6 +465,7 @@ public final class JSON
 
         private int order;
         private boolean wrap;
+        private Comparator<Token> comparator;
 
         private String name;
 
@@ -553,6 +566,23 @@ public final class JSON
         public Token(Object object)
         {
             this.set(object);
+
+            this.order = 0;
+            this.wrap = true;
+
+            this.name = null;
+        }
+
+        /**
+         * Creates a new Token to represent the given Serial object. The Serial interface is intended to simplify the
+         * code needed to convert an Object into a Token. Any class implementing the Serial interface requires the
+         * implementation of the toToken() method, which this constructor then uses. Simply put, this provides a
+         * shortcut to convert an object to a Token.
+         * @param serial The Serial object to create a Token of.
+         */
+        public Token(Serial serial)
+        {
+            this.set(serial);
 
             this.order = 0;
             this.wrap = true;
@@ -2357,9 +2387,42 @@ public final class JSON
                 case null -> this.set();
                 case List<?> x -> this.set(x);
                 case Map<?, ?> x -> this.set(x);
-                case Token x -> this.set(x.get());
+                case Token x -> this.set(x);
+                case Serial x -> this.set(x);
                 default -> this.set(object.toString());
             }
+        }
+
+        /**
+         * Sets the Token to be a clone of the provided Token. All current fields within this Token are overridden to
+         * the parameter Token's fields. Simply, a cloning method.
+         * @param token The Token to clone.
+         */
+        public void set(Token token)
+        {
+            this.num = token.num;
+            this.str = token.str;
+            this.bol = token.bol;
+            this.arr = token.arr;
+            this.obj = token.obj;
+
+            this.type = token.type;
+            this.order = token.order;
+            this.wrap = token.wrap;
+            this.comparator = token.comparator;
+
+            this.name = token.name;
+        }
+
+        /**
+         * Sets the Token to be a version of a Serial object. The Serial interface is intended to simplify the code
+         * needed to convert an object to a Token, and using this method allows the user to convert a Token to represent
+         * the given Serial object.
+         * @param serial The object to set this Token to.
+         */
+        public void set(Serial serial)
+        {
+            this.set(serial.toToken());
         }
 
         /**
@@ -2484,6 +2547,34 @@ public final class JSON
         }
 
         /**
+         * Gets the Comparator specified for compilation of an object. If the Comparator is null, then the order field
+         * will be used during compilation to specify the order of an object's fields. If a Token is parsed, then any
+         * contained objects will have a null Comparator, as a native JSON object doesn't have a way to specify an order
+         * for fields contained, nor do they usually require a specific order.
+         */
+        public Comparator<Token> getComparator()
+        {
+            return this.comparator;
+        }
+
+        /**
+         * Sets the Comparator used when compiling this token, if this token represents an object. If this token
+         * represents an array then the order during compilation will be the same as the array provides. If this token
+         * represents anything that isn't an array or an object, then there is no way to interpret the order. When using
+         * a Comparator on an object Token, the fields in the object are compiled in the order specified by the
+         * given Comparator. Likewise, when parsing a Token, any objects won't have a Comparator provided as the order
+         * isn't explicitly defined in a JSON object. Note the order field that all Tokens have as well. The order field
+         * is only used if the Comparator is null, and using neither the order nor the Comparator will result in an
+         * unspecified order during compilation.
+         *
+         * @param comparator The Comparator to use during compilation, or null to default to using order.
+         */
+        public void setComparator(Comparator<Token> comparator)
+        {
+            this.comparator = comparator;
+        }
+
+        /**
          * Gets the name of the Token. The name is the field the Token is found under in the JSON. This only applies if
          * the Token belongs to an object, otherwise if the Token belongs to an array, the name is null.
          * @return The name of the field this Token represents.
@@ -2514,6 +2605,18 @@ public final class JSON
         public String compile()
         {
             return JSON.compile(this);
+        }
+
+        /**
+         * Creates an object from this Token, provided the object class has a declared constructor accepting only 1
+         * Token for a parameter. Throws a RuntimeException wrapping various Reflect exceptions.
+         * @param type The class type to convert the object to.
+         * @return The object created from this Token.
+         * @param <T> The type for the object class.
+         */
+        public <T> T fromToken(Class<T> type)
+        {
+            return Serial.fromToken(type, this);
         }
 
         private void checkType(Type check)
@@ -2579,21 +2682,35 @@ public final class JSON
     public interface Serial
     {
         /**
+         * This method creates a new object constructed from the given Token. If the provided class type doesn't have a
+         * matching constructor (i.e a constructor that takes a single Token) then it throws a RuntimeException. It can
+         * also throw a RuntimeException representing various issues that using Reflect to instantiate an object can
+         * trigger.
+         * @param type The class type of the object. The class must have a declared constructor that accepts a single
+         *             Token as an argument.
+         * @param token The Token to create the object from.
+         * @return The object created from the Token.
+         * @param <T> The generic type of the created object.
+         */
+        public static <T> T fromToken(Class<T> type, Token token)
+        {
+            try
+            {
+                return type.getDeclaredConstructor(Token.class).newInstance(token);
+            }
+            catch(Exception exception)
+            {
+                throw new RuntimeException(exception);
+            }
+        }
+
+        /**
          * This method should be implemented in such a way that the underlying class can be represented as a JSON Token.
          * When converting the class to a Token, keep in mind that other methods are free to mutate the Token as they
          * see fit, and any changes might affect the representation of the class.
          * @return The Token representing this class.
          */
         public Token toToken();
-
-        /**
-         * This method should be implemented in such a way that the underlying class is updated to represent the JSON
-         * Token passed in. Due to the nature of JSON Tokens, the Token cannot be guaranteed to represent this class,
-         * and that case must be handled by this implementation, or at the very least, kept in mind when implementing
-         * this method.
-         * @param token The Token to update this class to represent.
-         */
-        public void fromToken(Token token);
     }
 
     /**
