@@ -3,6 +3,12 @@ package json;
 import json.JSON.Token.Type;
 
 import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.NumberFormat;
@@ -256,29 +262,112 @@ public final class JSON
             return new Token(number);
         }
 
-        private Token attemptString()
+        private Token attemptString() throws ParseException
         {
-            char currentCharacter = this.contents.charAt(this.index);
-            if(currentCharacter != '"')
+            if(this.contents.charAt(this.index) != '"')
                 return null;
 
             this.index++;
-            StringBuilder string = new StringBuilder();
 
+            StringBuilder builder = new StringBuilder();
             boolean escaping = false;
-            currentCharacter = this.contents.charAt(this.index);
-//            while(currentCharacter != '"' || (!string.isEmpty() && string.charAt(string.length() - 1) == '\\'))
-            while(currentCharacter != '"' || escaping)
+
+            while(this.index < this.contents.length())
             {
-                string.append(currentCharacter);
-                escaping = !escaping && currentCharacter == '\\';
-                this.index++;
-                currentCharacter = this.contents.charAt(this.index);
+                char currentCharacter = this.contents.charAt(this.index++);
+
+                if(escaping)
+                {
+                    switch(currentCharacter)
+                    {
+                        case '"':
+                            builder.append('"');
+                            break;
+                        case '\\':
+                            builder.append('\\');
+                            break;
+                        case '/':
+                            builder.append('/');
+                            break;
+                        case 'b':
+                            builder.append('\b');
+                            break;
+                        case 'f':
+                            builder.append('\f');
+                            break;
+                        case 'n':
+                            builder.append('\n');
+                            break;
+                        case 'r':
+                            builder.append('\r');
+                            break;
+                        case 't':
+                            builder.append('\t');
+                            break;
+                        case 'u':
+                            builder.appendCodePoint(this.parseUnicode());
+                            break;
+                        default:
+                            builder.append(currentCharacter);
+                            break;
+                    }
+                    escaping = false;
+                }
+                else
+                {
+                    if(currentCharacter == '\\')
+                        escaping = true;
+                    else if(currentCharacter == '"')
+                        return new Token(builder.toString());
+                    else
+                        builder.append(currentCharacter);
+                }
             }
 
-            this.index++;
-            return new Token(string.toString());
+            throw new ParseException("Unterminated string", this.index);
         }
+
+        private int parseUnicode() throws ParseException
+        {
+            if(this.index + 4 > this.contents.length())
+                throw new ParseException("Invalid Unicode escape", this.index - 2);
+
+            String hex = this.contents.substring(this.index, this.index + 4);
+            this.index += 4;
+
+            try
+            {
+                return Integer.parseInt(hex, 16);
+            }
+            catch(NumberFormatException exception)
+            {
+                throw new ParseException("Invalid Unicode escape '\\u" + hex + "'", this.index - 4);
+            }
+        }
+
+//        private Token attemptString()
+//        {
+//            char currentCharacter = this.contents.charAt(this.index);
+//            if(currentCharacter != '"')
+//                return null;
+//
+//            this.index++;
+//            StringBuilder string = new StringBuilder();
+//
+//            boolean escaping = false;
+//            currentCharacter = this.contents.charAt(this.index);
+////            while(currentCharacter != '"' || (!string.isEmpty() && string.charAt(string.length() - 1) == '\\'))
+//            while(currentCharacter != '"' || escaping)
+//            {
+//                string.append(currentCharacter);
+//                escaping = !escaping && currentCharacter == '\\';
+//                this.index++;
+//                currentCharacter = this.contents.charAt(this.index);
+//            }
+//
+//            this.index++;
+//            return new Token(string.toString());
+//        }
 
         private Token attemptBoolean()
         {
@@ -2420,7 +2509,7 @@ public final class JSON
          * the given Serial object.
          * @param serial The object to set this Token to.
          */
-        public void set(Serial serial)
+        public void set(Serialize serial)
         {
             this.set(serial.toToken());
         }
@@ -2616,7 +2705,7 @@ public final class JSON
          */
         public <T> T fromToken(Class<T> type)
         {
-            return Serial.fromToken(type, this);
+            return Serialize.fromToken(type, this);
         }
 
         private void checkType(Type check)
@@ -2674,13 +2763,118 @@ public final class JSON
         }
     }
 
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.METHOD})
+    public @interface Serial
+    {
+        public String name() default "";
+        public boolean read() default true;
+        public boolean write() default true;
+    }
+
     /**
      * An interface to allow the JSON parser to be more interoperable with other classes. Any class that implements the
      * Serial interface can be converted to a Token, and read from a Token, allowing for the class to be treated and
      * operated on like any other Token.
      */
-    public interface Serial
+    public interface Serialize
     {
+        public static Token serialize(Object object)
+        {
+            Token token = new Token(new HashMap<>());
+            Class<?> type = object.getClass();
+
+            for(Field field : type.getDeclaredFields())
+            {
+                field.setAccessible(true);
+                Serial annotation = field.getAnnotation(Serial.class);
+
+                if(annotation == null || !annotation.write())
+                    continue;
+
+                String name = !annotation.name().isEmpty() ? annotation.name() : field.getName();
+                try
+                {
+                    Object value = field.get(object);
+                    token.put(name, value);
+                }
+                catch(Exception exception)
+                {
+                    throw new RuntimeException(exception);
+                }
+            }
+
+            for(Method method : type.getDeclaredMethods())
+            {
+                method.setAccessible(true);
+                Serial annotation = method.getAnnotation(Serial.class);
+
+                if(annotation == null || !annotation.write())
+                    continue;
+
+                String name = !annotation.name().isEmpty() ? annotation.name() : method.getName();
+                try
+                {
+                    Object value = method.invoke(object);
+                    token.put(name, value);
+                }
+                catch(Exception exception)
+                {
+                    throw new RuntimeException(exception);
+                }
+            }
+
+            return token;
+        }
+
+        public static <T> T deserialize(Class<T> type, Token token)
+        {
+            try
+            {
+                T instance = type.getDeclaredConstructor().newInstance();
+
+                for(Field field : type.getDeclaredFields())
+                {
+                    field.setAccessible(true);
+                    Serial annotation = field.getAnnotation(Serial.class);
+
+                    if(annotation == null || !annotation.read())
+                        continue;
+
+                    String name = !annotation.name().isEmpty() ? annotation.name() : field.getName();
+
+                    if(token.has(name))
+                    {
+                        Object value = token.get(name);
+                        field.set(instance, value);
+                    }
+                }
+
+                for(Method method : type.getDeclaredMethods())
+                {
+                    method.setAccessible(true);
+                    Serial annotation = method.getAnnotation(Serial.class);
+
+                    if(annotation == null || !annotation.read())
+                        continue;
+
+                    String name = !annotation.name().isEmpty() ? annotation.name() : method.getName();
+
+                    if(token.has(name))
+                    {
+                        Object value = token.get(name);
+                        method.invoke(instance, value);
+                    }
+                }
+
+                return instance;
+            }
+            catch(Exception exception)
+            {
+                throw new RuntimeException(exception);
+            }
+        }
+
         /**
          * This method creates a new object constructed from the given Token. If the provided class type doesn't have a
          * matching constructor (i.e a constructor that takes a single Token) then it throws a RuntimeException. It can
