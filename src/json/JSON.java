@@ -104,7 +104,149 @@ public final class JSON
                 case String str -> tokens.add(new Token(str));
                 case Boolean bol -> tokens.add(new Token(bol));
                 case null -> tokens.add(new Token());
+                case List<?> arr -> tokens.add(new Token(arr));
+                case byte[] arr -> tokens.add(new Token(arr));
+                case short[] arr -> tokens.add(new Token(arr));
+                case int[] arr -> tokens.add(new Token(arr));
+                case long[] arr -> tokens.add(new Token(arr));
+                case float[] arr -> tokens.add(new Token(arr));
+                case double[] arr -> tokens.add(new Token(arr));
+                case char[] arr -> tokens.add(new Token(arr));
+                case Object[] arr -> tokens.add(new Token(arr));
+                case Map<?, ?> obj -> tokens.add(new Token(obj));
+                case Token token -> tokens.add(token);
+                default -> tokens.add(new Token(t.toString()));
+            }
+        }
+
+        return tokens;
+    }
+
+    /**
+     * Converts an array of bytes into a List of Tokens, easier to be used in conjunction with the parser.
+     * @param array The array to convert.
+     * @return A List of Tokens.
+     */
+    public static List<Token> convertArray(byte[] array)
+    {
+        List<Token> tokens = new ArrayList<>();
+
+        for(byte x : array)
+            tokens.add(new Token(x));
+        return tokens;
+    }
+
+    /**
+     * Converts an array of shorts into a List of Tokens, easier to be used in conjunction with the parser.
+     * @param array The array to convert.
+     * @return A List of Tokens.
+     */
+    public static List<Token> convertArray(short[] array)
+    {
+        List<Token> tokens = new ArrayList<>();
+
+        for(short x : array)
+            tokens.add(new Token(x));
+        return tokens;
+    }
+
+    /**
+     * Converts an array of integers into a List of Tokens, easier to be used in conjunction with the parser.
+     * @param array The array to convert.
+     * @return A List of Tokens.
+     */
+    public static List<Token> convertArray(int[] array)
+    {
+        List<Token> tokens = new ArrayList<>();
+
+        for(int x : array)
+            tokens.add(new Token(x));
+        return tokens;
+    }
+
+    /**
+     * Converts an array of longs into a List of Tokens, easier to be used in conjunction with the parser.
+     * @param array The array to convert.
+     * @return A List of Tokens.
+     */
+    public static List<Token> convertArray(long[] array)
+    {
+        List<Token> tokens = new ArrayList<>();
+
+        for(long x : array)
+            tokens.add(new Token(x));
+        return tokens;
+    }
+
+    /**
+     * Converts an array of floats into a List of Tokens, easier to be used in conjunction with the parser.
+     * @param array The array to convert.
+     * @return A List of Tokens.
+     */
+    public static List<Token> convertArray(float[] array)
+    {
+        List<Token> tokens = new ArrayList<>();
+
+        for(float x : array)
+            tokens.add(new Token(x));
+        return tokens;
+    }
+
+    /**
+     * Converts an array of doubles into a List of Tokens, easier to be used in conjunction with the parser.
+     * @param array The array to convert.
+     * @return A List of Tokens.
+     */
+    public static List<Token> convertArray(double[] array)
+    {
+        List<Token> tokens = new ArrayList<>();
+
+        for(double x : array)
+            tokens.add(new Token(x));
+        return tokens;
+    }
+
+    /**
+     * Converts an array of chars into a List of Tokens, easier to be used in conjunction with the parser.
+     * @param array The array to convert.
+     * @return A List of Tokens.
+     */
+    public static List<Token> convertArray(char[] array)
+    {
+        List<Token> tokens = new ArrayList<>();
+
+        for(char x : array)
+            tokens.add(new Token(x));
+        return tokens;
+    }
+
+    /**
+     * Converts an array of any type into a List of Tokens, easier to be used in conjunction with the parser.
+     * @param array The array to convert.
+     * @return A List of Tokens.
+     * @param <T> The original type for the array.
+     */
+    public static <T> List<Token> convertArray(T[] array)
+    {
+        List<Token> tokens = new ArrayList<>();
+
+        for(T t : array)
+        {
+            switch(t)
+            {
+                case Number num -> tokens.add(new Token(num));
+                case String str -> tokens.add(new Token(str));
+                case Boolean bol -> tokens.add(new Token(bol));
+                case null -> tokens.add(new Token());
                 case List<?> arr -> tokens.add(new Token(convertArray(arr)));
+                case byte[] arr -> tokens.add(new Token(arr));
+                case short[] arr -> tokens.add(new Token(arr));
+                case int[] arr -> tokens.add(new Token(arr));
+                case long[] arr -> tokens.add(new Token(arr));
+                case float[] arr -> tokens.add(new Token(arr));
+                case double[] arr -> tokens.add(new Token(arr));
+                case char[] arr -> tokens.add(new Token(arr));
+                case Object[] arr -> tokens.add(new Token(convertArray(arr)));
                 case Map<?, ?> obj -> tokens.add(new Token(obj));
                 case Token token -> tokens.add(token);
                 default -> tokens.add(new Token(t.toString()));
@@ -136,7 +278,15 @@ public final class JSON
                 case String str -> tokens.put(key, new Token(str));
                 case Boolean bol -> tokens.put(key, new Token(bol));
                 case null -> tokens.put(key, new Token());
-                case List<?> arr -> tokens.put(key, new Token(convertArray(arr)));
+                case List<?> arr -> tokens.put(key, new Token(arr));
+                case byte[] arr -> tokens.put(key, new Token(arr));
+                case short[] arr -> tokens.put(key, new Token(arr));
+                case int[] arr -> tokens.put(key, new Token(arr));
+                case long[] arr -> tokens.put(key, new Token(arr));
+                case float[] arr -> tokens.put(key, new Token(arr));
+                case double[] arr -> tokens.put(key, new Token(arr));
+                case char[] arr -> tokens.put(key, new Token(arr));
+                case Object[] arr -> tokens.put(key, new Token(arr));
                 case Map<?, ?> obj -> tokens.put(key, new Token(obj));
                 case Token token -> tokens.put(key, token);
                 default -> tokens.put(key, new Token(value.toString()));
@@ -344,30 +494,6 @@ public final class JSON
                 throw new ParseException("Invalid Unicode escape '\\u" + hex + "'", this.index - 4);
             }
         }
-
-//        private Token attemptString()
-//        {
-//            char currentCharacter = this.contents.charAt(this.index);
-//            if(currentCharacter != '"')
-//                return null;
-//
-//            this.index++;
-//            StringBuilder string = new StringBuilder();
-//
-//            boolean escaping = false;
-//            currentCharacter = this.contents.charAt(this.index);
-////            while(currentCharacter != '"' || (!string.isEmpty() && string.charAt(string.length() - 1) == '\\'))
-//            while(currentCharacter != '"' || escaping)
-//            {
-//                string.append(currentCharacter);
-//                escaping = !escaping && currentCharacter == '\\';
-//                this.index++;
-//                currentCharacter = this.contents.charAt(this.index);
-//            }
-//
-//            this.index++;
-//            return new Token(string.toString());
-//        }
 
         private Token attemptBoolean()
         {
@@ -631,6 +757,118 @@ public final class JSON
         }
 
         /**
+         * Creates a Token representing an array.
+         * @param arr The array of bytes to represent. The List is automatically converted to a List of Tokens.
+         */
+        public Token(byte[] arr)
+        {
+            this.set(arr);
+
+            this.order = 0;
+            this.wrap = false;
+
+            this.name = null;
+        }
+
+        /**
+         * Creates a Token representing an array.
+         * @param arr The array of shorts to represent. The List is automatically converted to a List of Tokens.
+         */
+        public Token(short[] arr)
+        {
+            this.set(arr);
+
+            this.order = 0;
+            this.wrap = false;
+
+            this.name = null;
+        }
+
+        /**
+         * Creates a Token representing an array.
+         * @param arr The array of integers to represent. The List is automatically converted to a List of Tokens.
+         */
+        public Token(int[] arr)
+        {
+            this.set(arr);
+
+            this.order = 0;
+            this.wrap = false;
+
+            this.name = null;
+        }
+
+        /**
+         * Creates a Token representing an array.
+         * @param arr The array of longs to represent. The List is automatically converted to a List of Tokens.
+         */
+        public Token(long[] arr)
+        {
+            this.set(arr);
+
+            this.order = 0;
+            this.wrap = false;
+
+            this.name = null;
+        }
+
+        /**
+         * Creates a Token representing an array.
+         * @param arr The array of floats to represent. The List is automatically converted to a List of Tokens.
+         */
+        public Token(float[] arr)
+        {
+            this.set(arr);
+
+            this.order = 0;
+            this.wrap = false;
+
+            this.name = null;
+        }
+
+        /**
+         * Creates a Token representing an array.
+         * @param arr The array of doubles to represent. The List is automatically converted to a List of Tokens.
+         */
+        public Token(double[] arr)
+        {
+            this.set(arr);
+
+            this.order = 0;
+            this.wrap = false;
+
+            this.name = null;
+        }
+
+        /**
+         * Creates a Token representing an array.
+         * @param arr The array of chars to represent. The List is automatically converted to a List of Tokens.
+         */
+        public Token(char[] arr)
+        {
+            this.set(arr);
+
+            this.order = 0;
+            this.wrap = false;
+
+            this.name = null;
+        }
+
+        /**
+         * Creates a Token representing an array.
+         * @param arr The array to represent. The array is automatically converted to a List of Tokens.
+         */
+        public <T> Token(T[] arr) // TODO: test related code (especially generics) and document
+        {
+            this.set(arr);
+
+            this.order = 0;
+            this.wrap = false;
+
+            this.name = null;
+        }
+
+        /**
          * Creates a Token representing an object.
          * @param obj The Map to represent. The Map is automatically converted to a Map of Strings to Tokens.
          */
@@ -658,6 +896,17 @@ public final class JSON
 
             this.order = 0;
             this.wrap = true;
+
+            boolean byteArray = object instanceof byte[];
+            boolean shortArray = object instanceof short[];
+            boolean intArray = object instanceof int[];
+            boolean longArray = object instanceof long[];
+            boolean floatArray = object instanceof float[];
+            boolean doubleArray = object instanceof double[];
+            boolean charArray = object instanceof char[];
+
+            if(byteArray || shortArray || intArray || longArray || floatArray || doubleArray || charArray)
+                this.wrap = false;
 
             this.name = null;
         }
@@ -2444,6 +2693,122 @@ public final class JSON
         }
 
         /**
+         * Sets the Token to represent an array of bytes. The array is automatically converted to be a List of Tokens.
+         * @param arr The array to represent.
+         */
+        public void set(byte[] arr)
+        {
+            this.num = null;
+            this.str = null;
+            this.bol = null;
+            this.arr = convertArray(arr);
+            this.obj = null;
+
+            this.type = Type.ARRAY;
+        }
+
+        /**
+         * Sets the Token to represent an array of shorts. The array is automatically converted to be a List of Tokens.
+         * @param arr The array to represent.
+         */
+        public void set(short[] arr)
+        {
+            this.num = null;
+            this.str = null;
+            this.bol = null;
+            this.arr = convertArray(arr);
+            this.obj = null;
+
+            this.type = Type.ARRAY;
+        }
+
+        /**
+         * Sets the Token to represent an array of ints. The array is automatically converted to be a List of Tokens.
+         * @param arr The array to represent.
+         */
+        public void set(int[] arr)
+        {
+            this.num = null;
+            this.str = null;
+            this.bol = null;
+            this.arr = convertArray(arr);
+            this.obj = null;
+
+            this.type = Type.ARRAY;
+        }
+
+        /**
+         * Sets the Token to represent an array of longs. The array is automatically converted to be a List of Tokens.
+         * @param arr The array to represent.
+         */
+        public void set(long[] arr)
+        {
+            this.num = null;
+            this.str = null;
+            this.bol = null;
+            this.arr = convertArray(arr);
+            this.obj = null;
+
+            this.type = Type.ARRAY;
+        }
+
+        /**
+         * Sets the Token to represent an array of floats. The array is automatically converted to be a List of Tokens.
+         * @param arr The array to represent.
+         */
+        public void set(float[] arr)
+        {
+            this.num = null;
+            this.str = null;
+            this.bol = null;
+            this.arr = convertArray(arr);
+            this.obj = null;
+
+            this.type = Type.ARRAY;
+        }
+
+        /**
+         * Sets the Token to represent an array of doubles. The array is automatically converted to be a List of Tokens.
+         * @param arr The array to represent.
+         */
+        public void set(double[] arr)
+        {
+            this.num = null;
+            this.str = null;
+            this.bol = null;
+            this.arr = convertArray(arr);
+            this.obj = null;
+
+            this.type = Type.ARRAY;
+        }
+
+        /**
+         * Sets the Token to represent an array of chars. The array is automatically converted to be a List of Tokens.
+         * @param arr The array to represent.
+         */
+        public void set(char[] arr)
+        {
+            this.num = null;
+            this.str = null;
+            this.bol = null;
+            this.arr = convertArray(arr);
+            this.obj = null;
+
+            this.type = Type.ARRAY;
+        }
+
+        public <T> void set(T[] arr)
+        {
+            this.num = null;
+            this.str = null;
+            this.bol = null;
+            this.arr = convertArray(arr);
+            this.obj = null;
+
+            this.type = Type.ARRAY;
+        }
+
+        /**
          * Sets the Token to represent an object. The object is automatically converted to be a Map of Strings to Tokens.
          * @param obj The Map to represent.
          */
@@ -2475,6 +2840,14 @@ public final class JSON
                 case Boolean x -> this.set(x);
                 case null -> this.set();
                 case List<?> x -> this.set(x);
+                case byte[] x -> this.set(x);
+                case short[] x -> this.set(x);
+                case int[] x -> this.set(x);
+                case long[] x -> this.set(x);
+                case float[] x -> this.set(x);
+                case double[] x -> this.set(x);
+                case char[] x -> this.set(x);
+                case Object[] x -> this.set(x);
                 case Map<?, ?> x -> this.set(x);
                 case Token x -> this.set(x);
                 case Serial x -> this.set(x);
