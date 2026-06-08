@@ -318,8 +318,6 @@ public final class JSON
                 token = this.getNext();
 
             return token;
-
-//            return this.getNext();
         }
 
         public Token getNext() throws ParseException
@@ -386,14 +384,6 @@ public final class JSON
         private Token attemptNumber() throws ParseException
         {
             StringBuilder numberString = new StringBuilder();
-//            char currentCharacter = this.contents.charAt(this.index);
-//
-//            while(NUMBER_SET.contains(currentCharacter))
-//            {
-//                numberString.append(currentCharacter);
-//                this.index++;
-//                currentCharacter = this.contents.charAt(this.index);
-//            }
 
             while(this.index < this.contents.length())
             {
@@ -420,15 +410,21 @@ public final class JSON
             this.index++;
 
             StringBuilder builder = new StringBuilder();
-            boolean escaping = false;
 
             while(this.index < this.contents.length())
             {
                 char currentCharacter = this.contents.charAt(this.index++);
 
-                if(escaping)
+                if(currentCharacter == '"')
+                    return new Token(builder.toString());
+
+                if(currentCharacter == '\\')
                 {
-                    switch(currentCharacter)
+                    if(this.index >= this.contents.length())
+                        throw new ParseException("Unterminated escape sequence", this.index - 1);
+
+                    char escapedCharacter = this.contents.charAt(this.index++);
+                    switch(escapedCharacter)
                     {
                         case '"':
                             builder.append('"');
@@ -455,23 +451,17 @@ public final class JSON
                             builder.append('\t');
                             break;
                         case 'u':
-                            builder.appendCodePoint(this.parseUnicode());
+                            builder.append((char)this.parseUnicode());
                             break;
                         default:
-                            builder.append(currentCharacter);
-                            break;
+                            throw new ParseException("Invalid escape sequence '\\" + escapedCharacter + "'",
+                                    this.index - 2);
                     }
-                    escaping = false;
                 }
+                else if(currentCharacter <= '\u001F')
+                    throw new ParseException("Unescaped control character in string", this.index - 1);
                 else
-                {
-                    if(currentCharacter == '\\')
-                        escaping = true;
-                    else if(currentCharacter == '"')
-                        return new Token(builder.toString());
-                    else
-                        builder.append(currentCharacter);
-                }
+                    builder.append(currentCharacter);
             }
 
             throw new ParseException("Unterminated string", this.index);
@@ -586,11 +576,47 @@ public final class JSON
             {
                 case NULL -> "null";
                 case NUMBER -> token.num.toString();
-                case STRING -> "\"" + token.str + "\"";
+                case STRING -> quote(token.str);
                 case BOOLEAN -> token.bol.toString();
                 case ARRAY -> formatArray(token, indent + this.space, token.wrap);
                 case OBJECT -> formatObject(token, indent + this.space, token.wrap);
             };
+        }
+
+        private String quote(String string)
+        {
+            StringBuilder escaped = new StringBuilder(string.length() + 2);
+            escaped.append('"');
+
+            for(int i = 0; i < string.length(); i++)
+            {
+                char character = string.charAt(i);
+
+                switch(character)
+                {
+                    case '"' -> escaped.append("\\\"");
+                    case '\\' -> escaped.append("\\\\");
+                    case '\b' -> escaped.append("\\b");
+                    case '\f' -> escaped.append("\\f");
+                    case '\n' -> escaped.append("\\n");
+                    case '\r' -> escaped.append("\\r");
+                    case '\t' -> escaped.append("\\t");
+                    default ->
+                    {
+                        if(Character.isHighSurrogate(character) && i + 1 < string.length()
+                                && Character.isLowSurrogate(string.charAt(i + 1)))
+                        {
+                            escaped.append(character).append(string.charAt(++i));
+                        }
+                        else if(character <= '\u001F' || Character.isSurrogate(character))
+                            escaped.append(String.format("\\u%04X", (int)character));
+                        else
+                            escaped.append(character);
+                    }
+                }
+            }
+
+            return escaped.append('"').toString();
         }
 
         private String formatArray(Token token, String indent, boolean wrap)
@@ -639,13 +665,13 @@ public final class JSON
             if(wrap)
             {
                 for(Entry<String, Token> field : sorted)
-                    total.append(indent).append("\"").append(field.getKey()).append("\": ").append(this.toString(field.getValue(), indent)).append(",\n");
+                    total.append(indent).append(this.quote(field.getKey())).append(": ").append(this.toString(field.getValue(), indent)).append(",\n");
                 total.deleteCharAt(total.length() - 2).append(indent).delete(total.length() - this.space.length(), total.length()).append("}");
             }
             else
             {
                 for(Entry<String, Token> field : sorted)
-                    total.append("\"").append(field.getKey()).append("\": ").append(this.toString(field.getValue(), indent)).append(", ");
+                    total.append(this.quote(field.getKey())).append(": ").append(this.toString(field.getValue(), indent)).append(", ");
                 total.delete(total.length() - 2, total.length()).append("}");
             }
 
